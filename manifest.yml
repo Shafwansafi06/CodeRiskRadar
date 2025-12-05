@@ -1,0 +1,93 @@
+modules:
+  jira:issuePanel:
+    - key: code-risk-radar-issue-panel
+      resource: issue-panel
+      resolver:
+        function: issuePanel
+      title: Code Risk Radar
+  
+  bitbucket:pullRequestPanel:
+    - key: code-risk-radar-pr-panel
+      resource: pr-panel
+      resolver:
+        function: prPanel
+      title: Risk Analysis
+  
+  bitbucket:webhook:
+    - key: pr-created-webhook
+      event: pullrequest:created
+      function: onPrCreated
+    - key: pr-updated-webhook
+      event: pullrequest:updated
+      function: onPrUpdated
+  
+  rovo:agent:
+    - key: risk-analysis-agent
+      name: Code Risk Radar Agent
+      description: Analyzes code risks and provides insights on pull requests
+      functionReference: rovoAgent
+      prompt:
+        - You are a code security and quality expert. Analyze pull requests for risks including security vulnerabilities, anti-patterns, and breaking changes.
+        - Provide actionable insights with severity levels and suggested fixes.
+        - Use the team's historical data to prioritize risks by business impact.
+  
+  rovo:action:
+    - key: explain-risk
+      name: Explain Risk
+      description: Provides detailed explanation of a detected code risk
+      functionReference: explainRisk
+    - key: suggest-fix
+      name: Suggest Fix
+      description: Generates code suggestions to fix identified risks
+      functionReference: suggestFix
+    - key: approve-fix
+      name: Approve Fix
+      description: Approves and applies a suggested fix with user confirmation
+      functionReference: approveFix
+  
+  function:
+    - key: onPrCreated
+      handler: index.handlePrCreated
+    - key: onPrUpdated
+      handler: index.handlePrUpdated
+    - key: prPanel
+      handler: index.prPanel
+    - key: issuePanel
+      handler: index.issuePanel
+    - key: rovoAgent
+      handler: rovoAgent.handler
+    - key: explainRisk
+      handler: rovoActions.explainRisk
+    - key: suggestFix
+      handler: rovoActions.suggestFix
+    - key: approveFix
+      handler: rovoActions.approveFix
+
+resources:
+  - key: pr-panel
+    path: static/riskPanel/index.html
+  - key: issue-panel
+    path: static/issuePanel/index.html
+
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+    - read:confluence-space.summary
+    - read:bitbucket:repository
+    - read:bitbucket:pullrequest
+    - write:bitbucket:pullrequest
+  external:
+    fetch:
+      backend:
+        - '*.openai.com'
+        - '*.anthropic.com'
+        - '*.supabase.co'
+
+app:
+  id: ari:cloud:ecosystem::app/[APP-ID]
+  runtime:
+    name: nodejs18.x
+  storage:
+    entity:
+      enabled: true

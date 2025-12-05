@@ -1,0 +1,35 @@
+{
+  "name": "code-risk-radar",
+  "version": "1.0.0",
+  "description": "Proactive code risk detection for Bitbucket and Jira via Atlassian Forge",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src/",
+    "deploy": "forge deploy",
+    "tunnel": "forge tunnel"
+  },
+  "keywords": [
+    "atlassian",
+    "forge",
+    "bitbucket",
+    "jira",
+    "code-review",
+    "security",
+    "rovo"
+  ],
+  "author": "Your Team",
+  "license": "MIT",
+  "dependencies": {
+    "@forge/api": "^3.0.0",
+    "@forge/resolver": "^1.5.0",
+    "@forge/ui": "^1.0.0",
+    "openai": "^4.20.0",
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {
+    "@forge/cli": "^6.0.0",
+    "eslint": "^8.50.0",
+    "jest": "^29.7.0"
+  }
+}
