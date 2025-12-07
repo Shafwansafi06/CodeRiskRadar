@@ -1,0 +1,256 @@
+# Rovo Agent & Action Definitions for manifest.yml
+# Add these sections to your existing manifest.yml
+
+modules:
+  # ============================================================================
+  # ROVO AGENTS
+  # ============================================================================
+  
+  rovo:agent:
+    - key: risk-analyst-agent
+      name: Risk Analyst
+      description: Analyzes code changes and provides intelligent risk assessment with actionable recommendations
+      prompt:
+        systemPrompt: |
+          You are an expert code security and quality analyst for Code Risk Radar. Your role is to analyze code changes and provide clear, actionable risk assessments.
+          
+          CAPABILITIES:
+          - Analyze risk scores and feature importance
+          - Identify security vulnerabilities, code smells, and quality issues
+          - Provide prioritized remediation actions
+          - Estimate effort and confidence levels
+          
+          OUTPUT FORMAT (JSON):
+          {
+            "explanation": "2-3 sentence summary of the risk",
+            "risk_level": "low|medium|high|critical",
+            "actions": [
+              {
+                "type": "security|quality|documentation|testing",
+                "priority": "high|medium|low",
+                "description": "What to do",
+                "evidence_lines": ["line references"],
+                "effort_estimate": "minutes|hours|days",
+                "confidence": 0.0-1.0
+              }
+            ]
+          }
+          
+          GUIDELINES:
+          - Be concise but specific
+          - Prioritize security issues
+          - Base recommendations on evidence
+          - Consider developer time constraints
+        userPrompt: |
+          Analyze this code change:
+          
+          RISK SCORE: {{risk_score}}
+          
+          TOP RISK FEATURES:
+          {{top_features}}
+          
+          CODE DIFF:
+          ```
+          {{diff_snippet}}
+          ```
+          
+          CONTEXT:
+          - File: {{file_path}}
+          - Author: {{author}}
+          - PR: {{pr_number}}
+          
+          Provide your analysis in JSON format.
+      
+    - key: historian-agent
+      name: Historian
+      description: Retrieves and analyzes similar past incidents to provide historical context
+      prompt:
+        systemPrompt: |
+          You are a code history analyst for Code Risk Radar. Your role is to find and summarize relevant past incidents that can inform current decisions.
+          
+          CAPABILITIES:
+          - Search historical incidents by code similarity
+          - Identify patterns in past bugs and vulnerabilities
+          - Provide context-aware recommendations
+          
+          OUTPUT FORMAT (JSON):
+          {
+            "similar_incidents": [
+              {
+                "id": "incident_id",
+                "summary": "One-line description",
+                "similarity": 0.0-1.0,
+                "resolution": "How it was fixed",
+                "link": "URL to incident",
+                "lessons": ["Key takeaway"]
+              }
+            ],
+            "patterns": ["Observed pattern"],
+            "recommendations": ["Based on history"]
+          }
+          
+          GUIDELINES:
+          - Focus on most relevant incidents (top 5)
+          - Highlight recurring patterns
+          - Provide actionable lessons
+        userPrompt: |
+          Find similar past incidents for this code:
+          
+          EMBEDDING VECTOR: {{embedding_vector}}
+          CODE SIGNATURE: {{code_signature}}
+          
+          CONTEXT:
+          - File Type: {{file_type}}
+          - Risk Area: {{risk_area}}
+          - Current Risk Score: {{risk_score}}
+          
+          Return relevant historical incidents in JSON format.
+
+  # ============================================================================
+  # ROVO ACTIONS
+  # ============================================================================
+  
+  rovo:action:
+    - key: create-jira-task-action
+      name: Create Jira Task
+      description: Creates a Jira task from risk analysis (requires confirmation)
+      function: createJiraTaskHandler
+      inputs:
+        - key: risk_analysis
+          type: string
+          description: JSON string of risk analysis
+          required: true
+        - key: project_key
+          type: string
+          description: Jira project key (e.g., RISK)
+          required: true
+        - key: priority
+          type: string
+          description: Task priority (High, Medium, Low)
+          required: false
+          default: Medium
+        - key: confirm
+          type: boolean
+          description: Set to true to actually create the task
+          required: false
+          default: false
+      outputs:
+        - key: preview
+          type: string
+          description: Preview of the task to be created
+        - key: task_key
+          type: string
+          description: Created task key (only when confirmed)
+        - key: task_url
+          type: string
+          description: URL to the created task
+    
+    - key: post-pr-comment-action
+      name: Post PR Comment
+      description: Posts risk analysis as a PR comment (requires confirmation)
+      function: postPRCommentHandler
+      inputs:
+        - key: risk_analysis
+          type: string
+          description: JSON string of risk analysis
+          required: true
+        - key: pr_number
+          type: string
+          description: Pull request number
+          required: true
+        - key: repository
+          type: string
+          description: Repository name (owner/repo)
+          required: true
+        - key: confirm
+          type: boolean
+          description: Set to true to actually post the comment
+          required: false
+          default: false
+      outputs:
+        - key: preview
+          type: string
+          description: Preview of the comment to be posted
+        - key: comment_id
+          type: string
+          description: Posted comment ID (only when confirmed)
+        - key: comment_url
+          type: string
+          description: URL to the posted comment
+    
+    - key: create-fix-branch-pr-action
+      name: Create Fix Branch PR
+      description: Creates a fix branch and PR (manual confirmation REQUIRED)
+      function: createFixBranchPRHandler
+      inputs:
+        - key: risk_analysis
+          type: string
+          description: JSON string of risk analysis
+          required: true
+        - key: base_branch
+          type: string
+          description: Base branch name
+          required: true
+        - key: fix_description
+          type: string
+          description: Description of the fix
+          required: true
+        - key: repository
+          type: string
+          description: Repository name (owner/repo)
+          required: true
+        - key: confirm
+          type: boolean
+          description: Must be explicitly set to true (manual confirmation required)
+          required: true
+      outputs:
+        - key: preview
+          type: string
+          description: Preview of branch and PR to be created
+        - key: branch_name
+          type: string
+          description: Created branch name
+        - key: pr_number
+          type: string
+          description: Created PR number
+        - key: pr_url
+          type: string
+          description: URL to the created PR
+
+  # ============================================================================
+  # FORGE FUNCTIONS
+  # ============================================================================
+  
+  function:
+    - key: createJiraTaskHandler
+      handler: index.createJiraTaskHandler
+    - key: postPRCommentHandler
+      handler: index.postPRCommentHandler
+    - key: createFixBranchPRHandler
+      handler: index.createFixBranchPRHandler
+
+# ============================================================================
+# PERMISSIONS
+# ============================================================================
+
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+    - read:confluence-space.summary
+    - write:confluence-content
+  external:
+    fetch:
+      backend:
+        - '*.github.com'
+        - '*.supabase.co'
+
+# ============================================================================
+# APP CONFIGURATION
+# ============================================================================
+
+app:
+  id: ari:cloud:ecosystem::app/YOUR_APP_ID
+  name: Code Risk Radar
+  runtime:
+    name: nodejs18.x

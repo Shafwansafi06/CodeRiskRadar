@@ -1,0 +1,14 @@
+app:
+  runtime:
+    name: nodejs18.x
+
+permissions:
+  scopes:
+    - storage:app
+    - read:jira-work
+    - write:jira-work
+
+modules:
+  function:
+    - key: hello-world
+      handler: index.handler

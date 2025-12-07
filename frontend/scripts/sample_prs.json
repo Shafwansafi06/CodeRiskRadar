@@ -1,0 +1,135 @@
+{
+  "risk_analysis": {
+    "risk_score": 0.85,
+    "risk_level": "critical",
+    "explanation": "Critical SQL injection vulnerability detected in authentication endpoint. The code constructs SQL queries using string concatenation with user-supplied input without proper sanitization or parameterization. This allows attackers to inject malicious SQL commands, potentially bypassing authentication, accessing sensitive data, or modifying database contents.",
+    "actions": [
+      {
+        "type": "security",
+        "priority": "critical",
+        "description": "Replace string concatenation with parameterized queries to prevent SQL injection",
+        "evidence_lines": [
+          "const query = `SELECT * FROM users WHERE username='${username}' AND password='${password}'`;",
+          "db.query(query, (err, results) => { ... });"
+        ],
+        "effort_estimate": "30 minutes",
+        "confidence": 0.95,
+        "explanation": "Direct string interpolation of user input into SQL queries is extremely dangerous. Parameterized queries ensure that user input is treated as data, not executable code."
+      },
+      {
+        "type": "security",
+        "priority": "high",
+        "description": "Add input validation and sanitization for username and password fields",
+        "evidence_lines": [
+          "const username = req.body.username;",
+          "const password = req.body.password;"
+        ],
+        "effort_estimate": "45 minutes",
+        "confidence": 0.85,
+        "explanation": "Even with parameterized queries, validating input format and length adds an additional security layer.",
+        "resources": [
+          {
+            "title": "OWASP SQL Injection Prevention Cheat Sheet",
+            "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+          }
+        ]
+      },
+      {
+        "type": "security",
+        "priority": "high",
+        "description": "Implement rate limiting on authentication endpoints",
+        "evidence_lines": [
+          "app.post('/api/auth/login', async (req, res) => {"
+        ],
+        "effort_estimate": "2 hours",
+        "confidence": 0.75,
+        "explanation": "Rate limiting prevents brute force attacks and reduces the impact of successful SQL injection exploitation attempts."
+      },
+      {
+        "type": "maintainability",
+        "priority": "medium",
+        "description": "Migrate to an ORM or query builder for safer database interactions",
+        "evidence_lines": [
+          "const query = `SELECT * FROM users WHERE username='${username}' AND password='${password}'`;",
+          "db.query(query, (err, results) => { ... });"
+        ],
+        "effort_estimate": "4 hours",
+        "confidence": 0.80,
+        "explanation": "ORMs like Sequelize or query builders like Knex.js provide built-in protection against SQL injection and improve code maintainability."
+      }
+    ],
+    "top_features": [
+      { "name": "sql_keywords", "importance": 0.45 },
+      { "name": "user_input_usage", "importance": 0.32 },
+      { "name": "string_concatenation", "importance": 0.23 },
+      { "name": "auth_endpoint", "importance": 0.18 },
+      { "name": "direct_db_query", "importance": 0.15 }
+    ]
+  },
+  "historical_context": {
+    "similar_incidents": [
+      {
+        "id": "INC-2023-045",
+        "summary": "SQL injection vulnerability in user authentication endpoint",
+        "similarity": 0.92,
+        "resolution": "Implemented parameterized queries using prepared statements and added input validation layer",
+        "link": "https://jira.company.com/browse/INC-2023-045",
+        "lessons": [
+          "Always use parameterized queries for database operations",
+          "Add input validation as defense-in-depth",
+          "Conduct security code review for all authentication flows"
+        ],
+        "severity": "critical",
+        "occurred_at": "2023-08-15T10:30:00Z"
+      },
+      {
+        "id": "INC-2023-112",
+        "summary": "Authentication bypass via SQL injection in login handler",
+        "similarity": 0.87,
+        "resolution": "Refactored authentication logic to use Sequelize ORM, eliminating raw SQL queries",
+        "link": "https://jira.company.com/browse/INC-2023-112",
+        "lessons": [
+          "Consider using an ORM to reduce SQL injection attack surface",
+          "Implement automated SQL injection testing in CI/CD pipeline"
+        ],
+        "severity": "high",
+        "occurred_at": "2023-09-22T14:15:00Z"
+      },
+      {
+        "id": "INC-2024-003",
+        "summary": "String concatenation SQL injection in user search feature",
+        "similarity": 0.78,
+        "resolution": "Migrated to parameterized queries and added comprehensive input validation",
+        "link": "https://jira.company.com/browse/INC-2024-003",
+        "lessons": [
+          "Audit all SQL query construction patterns across the codebase",
+          "Provide security training on secure coding practices"
+        ],
+        "severity": "high",
+        "occurred_at": "2024-01-10T09:45:00Z"
+      }
+    ],
+    "patterns": [
+      "SQL injection vulnerabilities frequently occur in authentication and user management code",
+      "Direct string concatenation in SQL queries is the most common root cause",
+      "Authentication endpoints are high-value targets requiring extra scrutiny",
+      "Legacy code often contains raw SQL queries instead of using ORMs"
+    ],
+    "recommendations": [
+      "Implement automated SQL injection testing in CI/CD pipeline using tools like SQLMap or Burp Suite",
+      "Conduct security code review for all authentication and authorization flows",
+      "Consider migrating to an ORM (Sequelize, TypeORM) to reduce SQL injection attack surface",
+      "Add static analysis security testing (SAST) to catch SQL injection patterns early",
+      "Provide security training focused on OWASP Top 10 vulnerabilities"
+    ]
+  },
+  "metadata": {
+    "file_path": "src/auth/login.js",
+    "pr_number": "123",
+    "repository": "company/code-risk-radar",
+    "author": "john.doe",
+    "branch": "feature/auth-improvements",
+    "diff_url": "https://github.com/company/code-risk-radar/pull/123/files",
+    "analyzed_at": "2024-01-15T16:30:00Z"
+  }
+}
