@@ -1,0 +1,578 @@
+[
+  {
+    "id": "f3002a67-a48d-40dc-9cf0-e8b466781fdf",
+    "doc_id": "aws/s2n-quic/pr/2915",
+    "title": "s2n-quic-dc: split acceptor error events by source",
+    "additions": 1562,
+    "deletions": 1326,
+    "changed_files": 8,
+    "quality_score": 0.6
+  },
+  {
+    "id": "2fd8f425-b3d8-436c-b397-aac9502db993",
+    "doc_id": "elastic/beats/pr/48048",
+    "title": "[9.2](backport #47968) Add status.last_terminated_exitcode field in state_container metricset",
+    "additions": 3582,
+    "deletions": 4028,
+    "changed_files": 118,
+    "quality_score": 0.4
+  },
+  {
+    "id": "03760a6b-0bcc-4dc8-a18a-c3832dc48145",
+    "doc_id": "apache/netbeans/pr/9075",
+    "title": "Support for env files",
+    "additions": 3717,
+    "deletions": 0,
+    "changed_files": 56,
+    "quality_score": 0.3
+  },
+  {
+    "id": "5f5ccf4e-a1ce-4291-959d-56e2f26cdeae",
+    "doc_id": "apache/beam/pr/37084",
+    "title": "Test2poc do not merge",
+    "additions": 101,
+    "deletions": 5499,
+    "changed_files": 19,
+    "quality_score": 0.4
+  },
+  {
+    "id": "c6973e1d-3a23-4e8b-a39d-8940c99c9b8f",
+    "doc_id": "apache/doris-website/pr/3181",
+    "title": "[opt](catalog) change the version of some catalog feature",
+    "additions": 540,
+    "deletions": 82,
+    "changed_files": 72,
+    "quality_score": 0.6
+  },
+  {
+    "id": "ff86a5a0-8466-422b-9287-ad6275a78d8b",
+    "doc_id": "apache/tika/pr/2440",
+    "title": "TIKA-4553-rm-tika-config-parsers-standard",
+    "additions": 260,
+    "deletions": 1345,
+    "changed_files": 57,
+    "quality_score": 0.4
+  },
+  {
+    "id": "eb4d51a0-3ae3-4ccd-b185-ea6466bcfdaa",
+    "doc_id": "apache/guacamole-server/pr/626",
+    "title": "GUACAMOLE-2182: Correct issues with macro redefinitions that cause compiles to fail.",
+    "additions": 16,
+    "deletions": 154,
+    "changed_files": 95,
+    "quality_score": 0.6
+  },
+  {
+    "id": "9444b7dd-5343-47d6-8b6c-60c331de43b6",
+    "doc_id": "elastic/osqgen/pr/5",
+    "title": "Upgrade schemas to 5.19.0",
+    "additions": 45550,
+    "deletions": 165,
+    "changed_files": 3,
+    "quality_score": 0.4
+  },
+  {
+    "id": "788687d9-38b4-41df-b6d3-3c0d5c14d382",
+    "doc_id": "apache/dolphinscheduler/pr/17779",
+    "title": "[Feature-17501][Worker] Generic Third-party System API Connector for REST-based Task Scheduling ",
+    "additions": 6508,
+    "deletions": 25,
+    "changed_files": 75,
+    "quality_score": 0.4
+  },
+  {
+    "id": "879e36ed-343e-42a0-a199-f0296bed3d1b",
+    "doc_id": "apache/rocketmq-a2a/pr/6",
+    "title": "optimize the code ",
+    "additions": 1925,
+    "deletions": 186,
+    "changed_files": 23,
+    "quality_score": 0.3
+  },
+  {
+    "id": "d3fe43ed-0835-4699-a529-2193009094fe",
+    "doc_id": "elastic/go-elasticsearch/pr/1085",
+    "title": "[Backport 8.19] chore: migrate to new artifact api (#1077)",
+    "additions": 2497,
+    "deletions": 400,
+    "changed_files": 31,
+    "quality_score": 0.3
+  },
+  {
+    "id": "5a4de998-2c66-47ef-b29c-126dec6b9c90",
+    "doc_id": "apache/dubbo-go-pixiu/pr/839",
+    "title": "feat(ingress): Add application gateway resource policy",
+    "additions": 4099,
+    "deletions": 105,
+    "changed_files": 31,
+    "quality_score": 0.4
+  },
+  {
+    "id": "c9314d6a-3d9c-4ce2-b4e6-4d398d3ecf16",
+    "doc_id": "elastic/go-elasticsearch/pr/1084",
+    "title": "[Backport 9.2] chore: migrate to new artifact api (#1077)",
+    "additions": 2463,
+    "deletions": 386,
+    "changed_files": 31,
+    "quality_score": 0.3
+  },
+  {
+    "id": "84b2da3e-a0bf-443c-81be-e2f25c29cdae",
+    "doc_id": "elastic/go-elasticsearch/pr/1083",
+    "title": "[Backport 9.1] chore: migrate to new artifact api (#1077)",
+    "additions": 2494,
+    "deletions": 392,
+    "changed_files": 31,
+    "quality_score": 0.3
+  },
+  {
+    "id": "d20481a1-97df-4a43-8d8a-5d1a27b338fe",
+    "doc_id": "apache/ignite-website/pr/292",
+    "title": "IGNITE-27320 Added subsite",
+    "additions": 23714,
+    "deletions": 0,
+    "changed_files": 1162,
+    "quality_score": 0.19999999999999998
+  },
+  {
+    "id": "f900ec4b-625f-4d45-8a23-ae4e094e4ac9",
+    "doc_id": "microsoft/agent-framework/pr/2782",
+    "title": "Python: [BREAKING] Observability updates",
+    "additions": 6219,
+    "deletions": 4490,
+    "changed_files": 35,
+    "quality_score": 0.4
+  },
+  {
+    "id": "a8d50765-b67b-4e6e-89d2-58c085fa2940",
+    "doc_id": "microsoft/vscode-documentdb/pr/418",
+    "title": "Release `0.6.2`",
+    "additions": 6505,
+    "deletions": 4135,
+    "changed_files": 77,
+    "quality_score": 0.3
+  },
+  {
+    "id": "c850458a-a55f-4f11-a808-a3d90b32d2f3",
+    "doc_id": "microsoft/vscode/pr/282706",
+    "title": "fix chat jump/flicker on accept input ",
+    "additions": 2142,
+    "deletions": 813,
+    "changed_files": 94,
+    "quality_score": 0.4
+  },
+  {
+    "id": "23ee1835-cf6b-4212-a303-0497862d4eaf",
+    "doc_id": "apache/iotdb/pr/16897",
+    "title": "pipe: Add Object data export support for Pipe",
+    "additions": 3466,
+    "deletions": 129,
+    "changed_files": 29,
+    "quality_score": 0.5
+  },
+  {
+    "id": "a97def74-3dd6-4d2c-b7c0-83978249425e",
+    "doc_id": "apache/datafusion-comet/pr/2877",
+    "title": "chore: Enable plan stability suite for native_datafusion for Spark 3.4",
+    "additions": 59538,
+    "deletions": 40951,
+    "changed_files": 409,
+    "quality_score": 0.4
+  },
+  {
+    "id": "47ac9905-8cde-496d-8b02-64ac92d9e1fb",
+    "doc_id": "apache/ignite-3/pr/7213",
+    "title": "Ign 29500",
+    "additions": null,
+    "deletions": null,
+    "changed_files": null,
+    "quality_score": 0.7999999999999999
+  },
+  {
+    "id": "ff3339bb-48f3-4c52-920b-a4e259938e15",
+    "doc_id": "google/perfetto/pr/4087",
+    "title": "Replace SQL table with DataGrid",
+    "additions": 972,
+    "deletions": 6923,
+    "changed_files": 49,
+    "quality_score": 0.4
+  },
+  {
+    "id": "118db8c9-5ee5-47f5-bafd-b9a812583503",
+    "doc_id": "microsoft/fluentui-charting-contrib/pr/647",
+    "title": "Add heatmap annotation examples",
+    "additions": 7493,
+    "deletions": 3,
+    "changed_files": 8,
+    "quality_score": 0.5
+  },
+  {
+    "id": "b4009d61-e8a8-4b77-92a8-e45f9d228f7f",
+    "doc_id": "apache/incubator-kie-kogito-runtimes/pr/4144",
+    "title": "Productize the Workflow Endpoint Webapp",
+    "additions": 1630,
+    "deletions": 1308,
+    "changed_files": 76,
+    "quality_score": 0.4
+  },
+  {
+    "id": "70134d57-58d3-47cd-a398-25ee8ae77128",
+    "doc_id": "apache/lucene/pr/15499",
+    "title": "MatchAllDocs and MatchNoDocs should be singletons",
+    "additions": 634,
+    "deletions": 571,
+    "changed_files": 176,
+    "quality_score": 0.3
+  },
+  {
+    "id": "9e67f850-9d4e-4c11-8e4f-ff3e2efe64ed",
+    "doc_id": "microsoft/BotFramework-WebChat/pr/5652",
+    "title": "Upgrade legacy tests to `html2`",
+    "additions": 7676,
+    "deletions": 2745,
+    "changed_files": 258,
+    "quality_score": 0.4
+  },
+  {
+    "id": "b5479f78-ea78-4779-9619-c93662d5d379",
+    "doc_id": "microsoft/typescript-go/pr/2339",
+    "title": "Port many more fourslash functions",
+    "additions": 11613,
+    "deletions": 5,
+    "changed_files": 290,
+    "quality_score": 0.4
+  },
+  {
+    "id": "4bf7bd3a-7579-4290-8948-c5a99ebfdd8c",
+    "doc_id": "microsoft/typespec/pr/9186",
+    "title": "Bump TypeSpec, TCGC, and Spector dependency versions for http-client-java",
+    "additions": 4813,
+    "deletions": 205,
+    "changed_files": 51,
+    "quality_score": 0.4
+  },
+  {
+    "id": "34f44c1a-f318-472b-8b56-f11a7acef2a5",
+    "doc_id": "aws/aws-ofi-nccl/pr/1069",
+    "title": "Add GPU-Initiated Networking (GIN) API",
+    "additions": 3353,
+    "deletions": 4,
+    "changed_files": 20,
+    "quality_score": 0.5
+  },
+  {
+    "id": "0ac0564c-d016-4330-ab9a-fa79ee366fe9",
+    "doc_id": "google/adk-go/pr/413",
+    "title": "Dtmai",
+    "additions": 42001,
+    "deletions": 0,
+    "changed_files": 224,
+    "quality_score": 0.19999999999999998
+  },
+  {
+    "id": "1b13d561-0467-4d36-a991-01f9f4c5194e",
+    "doc_id": "google/adk-go/pr/411",
+    "title": "Dtmai",
+    "additions": 0,
+    "deletions": 0,
+    "changed_files": 0,
+    "quality_score": 0.7999999999999999
+  },
+  {
+    "id": "2c65dbdd-4ff6-4b77-9071-0bf4142fb0b2",
+    "doc_id": "microsoft/azure-pipelines-tasks/pr/21563",
+    "title": "Users/sanjuyadav/usedotnet",
+    "additions": 8874,
+    "deletions": 24,
+    "changed_files": 54,
+    "quality_score": 0.3
+  },
+  {
+    "id": "d45def17-c7ca-42f2-a9e0-756af72b7e8c",
+    "doc_id": "apache/gravitino/pr/9460",
+    "title": "[#9459] improve(catalog-hive/hudi) Refactor the Hive and Hudi catalogs to use the HiveClient",
+    "additions": 1147,
+    "deletions": 2413,
+    "changed_files": 47,
+    "quality_score": 0.4
+  },
+  {
+    "id": "10ac07f2-3e62-4400-91d4-309b861a1e65",
+    "doc_id": "apache/gravitino/pr/9457",
+    "title": "[#9456] feat(catalog-hive):  Support Kerberos authentication and user impersonation in the HiveClient",
+    "additions": 3916,
+    "deletions": 95,
+    "changed_files": 30,
+    "quality_score": 0.5
+  },
+  {
+    "id": "9bd64009-4177-45b8-9d5a-bc5028c3e9b4",
+    "doc_id": "apache/fory-site/pr/367",
+    "title": "remove stale guide doc",
+    "additions": 0,
+    "deletions": 2123,
+    "changed_files": 2,
+    "quality_score": 0.4
+  },
+  {
+    "id": "b2e982f0-8b05-43bf-a510-04e8a37c4771",
+    "doc_id": "apache/answer/pr/1455",
+    "title": "Release/1.7.1",
+    "additions": 1749,
+    "deletions": 1382,
+    "changed_files": 229,
+    "quality_score": 0.19999999999999998
+  },
+  {
+    "id": "6e689e67-c09c-4924-af49-155b9773239a",
+    "doc_id": "apache/fory-site/pr/366",
+    "title": "update position sidebar",
+    "additions": 4,
+    "deletions": 3253,
+    "changed_files": 7,
+    "quality_score": 0.4
+  },
+  {
+    "id": "d14193e5-267e-422f-a74c-40bfa34cd806",
+    "doc_id": "google/perfetto/pr/4084",
+    "title": "perfetto: upgrade protobuf to v31",
+    "additions": 2216,
+    "deletions": 3650,
+    "changed_files": 9,
+    "quality_score": 0.5
+  },
+  {
+    "id": "c5562303-8b3f-4da5-8908-4bd9bc67b6b0",
+    "doc_id": "microsoft/fabric-toolbox/pr/339",
+    "title": "Spork 0009 support for nested activities bug fixes",
+    "additions": 1845,
+    "deletions": 650,
+    "changed_files": 17,
+    "quality_score": 0.4
+  },
+  {
+    "id": "2e44613d-2a2b-4bb5-9c73-0612fe25f8d3",
+    "doc_id": "apache/beam-site/pr/694",
+    "title": "Publish docs for 2.70.0 release",
+    "additions": 1507707,
+    "deletions": 4,
+    "changed_files": 6014,
+    "quality_score": 0.3
+  },
+  {
+    "id": "57b68c83-98bc-45a0-b9a8-f91015a658b2",
+    "doc_id": "microsoft/fhir-server/pr/5272",
+    "title": "[DO NOT REVIEW] Adding RetryFact and RetryTheory to all tests",
+    "additions": 3684,
+    "deletions": 2871,
+    "changed_files": 436,
+    "quality_score": 0.4
+  },
+  {
+    "id": "c743f9c0-9b97-4e87-a6e3-0fc26e0cda9b",
+    "doc_id": "facebook/hermes/pr/1858",
+    "title": "Migrate TextEncoder from VM APIs to JSI APIs",
+    "additions": 1451,
+    "deletions": 560,
+    "changed_files": 61,
+    "quality_score": 0.4
+  },
+  {
+    "id": "8b5dee2e-c8bb-462e-8718-2147c7733a6c",
+    "doc_id": "microsoft/typescript-go/pr/2333",
+    "title": "Add token flags parameter to token creation functions",
+    "additions": 247,
+    "deletions": 708,
+    "changed_files": 72,
+    "quality_score": 0.6
+  },
+  {
+    "id": "f708b275-37f3-4795-8ec7-8cb634bf2f41",
+    "doc_id": "aws/bedrock-agentcore-sdk-typescript/pr/36",
+    "title": "feat: add memory module implementation",
+    "additions": 4369,
+    "deletions": 47,
+    "changed_files": 17,
+    "quality_score": 0.5
+  },
+  {
+    "id": "f725e9cf-a27d-42a0-973a-34b3b4ec5a69",
+    "doc_id": "aws/aws-toolkit-vscode/pr/8410",
+    "title": "fix(amazonq): fix for merge conflicts for e2e tests branch",
+    "additions": 99996,
+    "deletions": 10144,
+    "changed_files": 681,
+    "quality_score": 0.4
+  },
+  {
+    "id": "912973f6-845b-4bf7-a7b3-8d085c02ed67",
+    "doc_id": "microsoft/vscode-fabric/pr/46",
+    "title": "Localized file check-in by OneLocBuild Task: Build definition ID 18558: Build ID 16468549",
+    "additions": 4186,
+    "deletions": 3612,
+    "changed_files": 28,
+    "quality_score": 0.5
+  },
+  {
+    "id": "0f6df2c0-61e7-4a78-9109-08fb464adaa3",
+    "doc_id": "apache/polaris-tools/pr/96",
+    "title": "UI 85",
+    "additions": 23389,
+    "deletions": 0,
+    "changed_files": 112,
+    "quality_score": 0.19999999999999998
+  },
+  {
+    "id": "3e169681-5539-4f2b-b7eb-ef1ace9da857",
+    "doc_id": "aws/aws-toolkit-vscode/pr/8409",
+    "title": "merge from main",
+    "additions": 99822,
+    "deletions": 9862,
+    "changed_files": 681,
+    "quality_score": 0.3
+  },
+  {
+    "id": "663b4a86-0627-4bb8-aeff-0c2999e6a1a6",
+    "doc_id": "google/meridian/pr/1346",
+    "title": "Escape special characters in analyzer test regex strings",
+    "additions": 6438,
+    "deletions": 6932,
+    "changed_files": 4,
+    "quality_score": 0.5
+  },
+  {
+    "id": "0e97ef11-195a-412f-b9e4-aee32f2feff4",
+    "doc_id": "microsoft/teams.net/pr/237",
+    "title": "Add Proactive and SourceCodeGenerators",
+    "additions": 2091,
+    "deletions": 30,
+    "changed_files": 46,
+    "quality_score": 0.4
+  },
+  {
+    "id": "4ea9fd95-e6c7-4963-be0c-0fc041241618",
+    "doc_id": "atlassian/atlassian-mcp-server/pr/24",
+    "title": "Add skills and Claude plugin configuration",
+    "additions": 5511,
+    "deletions": 0,
+    "changed_files": 16,
+    "quality_score": 0.5
+  },
+  {
+    "id": "81e1f052-323e-43b7-9764-35c16170ef2d",
+    "doc_id": "oracle/microservices-datadriven/pr/1147",
+    "title": "Documentation and Docusaurus updates",
+    "additions": 1631,
+    "deletions": 643,
+    "changed_files": 29,
+    "quality_score": 0.4
+  },
+  {
+    "id": "8cded5e1-bf13-44ae-adb6-337734186fc1",
+    "doc_id": "apache/datasketches-rust/pr/1",
+    "title": "[draft] HLL backend implementation",
+    "additions": 8282,
+    "deletions": 1,
+    "changed_files": 20,
+    "quality_score": 0.5
+  },
+  {
+    "id": "6ba6bb91-5911-403a-bd1b-5fe09dcb1bf5",
+    "doc_id": "microsoft/PAX/pr/41",
+    "title": "purview-v1.9.0 release updates",
+    "additions": 13279,
+    "deletions": 16,
+    "changed_files": 9,
+    "quality_score": 0.5
+  },
+  {
+    "id": "88a613f0-dd78-4dd3-b29b-bb8283556161",
+    "doc_id": "microsoft/healthcare-ai-model-evaluator/pr/34",
+    "title": "Threat Model Modifications",
+    "additions": 4764,
+    "deletions": 636,
+    "changed_files": 63,
+    "quality_score": 0.3
+  },
+  {
+    "id": "87a1543d-e724-4583-a810-fa020801d8b6",
+    "doc_id": "microsoft/ApplicationInsights-dotnet/pr/3050",
+    "title": "[Shim] Update 3.x readme",
+    "additions": 2303,
+    "deletions": 176,
+    "changed_files": 4,
+    "quality_score": 0.4
+  },
+  {
+    "id": "14974e7b-158c-455f-a765-9361c52d40b3",
+    "doc_id": "microsoft/AzureStack_Network_Switch_Config_Generator/pr/83",
+    "title": "update doc and test cases",
+    "additions": 8149,
+    "deletions": 178,
+    "changed_files": 35,
+    "quality_score": 0.3
+  },
+  {
+    "id": "00af7380-75a0-4f01-aa65-5f6024837b51",
+    "doc_id": "microsoft/mcp/pr/1360",
+    "title": "[DRAFT] [ONBOARD] Add Support for Microsoft.StorageSync Resource Provider to Azure MCP Server",
+    "additions": 5905,
+    "deletions": 7,
+    "changed_files": 103,
+    "quality_score": 0.4
+  },
+  {
+    "id": "26508ed5-141f-4e31-b511-b040143314b2",
+    "doc_id": "apache/beam/pr/37077",
+    "title": "Testpocpd do not merge",
+    "additions": 99,
+    "deletions": 5499,
+    "changed_files": 19,
+    "quality_score": 0.4
+  },
+  {
+    "id": "58f02e5b-d959-4908-a755-c88a5af0e1e1",
+    "doc_id": "apache/tika/pr/2438",
+    "title": "TIKA-4562",
+    "additions": 2118,
+    "deletions": 1382,
+    "changed_files": 72,
+    "quality_score": 0.3
+  },
+  {
+    "id": "48834ec5-cccb-43ca-8740-ec0c796f3f2f",
+    "doc_id": "apache/jena/pr/3635",
+    "title": "GH-3634: TurtleJCC evolution",
+    "additions": 484,
+    "deletions": 161,
+    "changed_files": 53,
+    "quality_score": 0.5
+  },
+  {
+    "id": "b4c54851-222f-4910-895e-9135627b9ab3",
+    "doc_id": "google/meridian/pr/1342",
+    "title": "Add autospec and spec_set to mocks in analyzer_test",
+    "additions": 6403,
+    "deletions": 6888,
+    "changed_files": 4,
+    "quality_score": 0.5
+  },
+  {
+    "id": "8528b6b7-dea9-4f80-8da2-f0ff672fb266",
+    "doc_id": "facebook/lexical/pr/8024",
+    "title": "Chore: Update examples for v0.39.0",
+    "additions": 1989,
+    "deletions": 1989,
+    "changed_files": 15,
+    "quality_score": 0.4
+  },
+  {
+    "id": "843dd43a-06e1-4da5-a547-6745ca02dbbd",
+    "doc_id": "google/oss-fuzz/pr/14459",
+    "title": "Revert \"Mass Migration: Batch to Ubuntu 24.04\"",
+    "additions": 942,
+    "deletions": 1866,
+    "changed_files": 1848,
+    "quality_score": 0.3
+  }
+]

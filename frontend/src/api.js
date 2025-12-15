@@ -5,10 +5,18 @@
  * Automatically detects Forge environment vs. local development.
  */
 
-import { invoke } from '@forge/bridge';
+// Safely import Forge bridge only if available
+let invoke = null;
+try {
+  const forgeBridge = require('@forge/bridge');
+  invoke = forgeBridge.invoke;
+} catch (e) {
+  // Running in local dev mode, no Forge bridge available
+  console.log('[DEV MODE] Forge bridge not available, using mock data');
+}
 
 // Check if running in Forge environment
-const isForgeEnvironment = typeof window !== 'undefined' && window.AP;
+const isForgeEnvironment = typeof window !== 'undefined' && window.AP && invoke !== null;
 
 /**
  * Load mock data for local development

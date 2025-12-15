@@ -5,22 +5,30 @@ app:
 
 permissions:
   scopes:
+    - read:pullrequest:bitbucket
+    - write:pullrequest:bitbucket
     - storage:app
-    - read:jira-work
-    - write:jira-work
-  external:
-    fetch:
-      backend:
-        - '*.github.com'
-        - 'api.github.com'
 
 modules:
   function:
-    - key: hello-world
-      handler: index-handler.handler
-  
-  jira:issuePanel:
-    - key: risk-radar-panel
-      title: Code Risk Radar
-      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
-      function: hello-world
+    - key: getRiskAnalysis
+      handler: bridge/getRiskAnalysis.handler
+    - key: postPRComment
+      handler: bridge/postPRComment.handler
+    - key: getSimilarIncidents
+      handler: bridge/getSimilarIncidents.handler
+    - key: improvePRQuality
+      handler: rovo/prQualityAgent.handler
+    - key: loadSeedData
+      handler: bridge/loadSeedData.loadSeedDataHandler
+
+  bitbucket:repoPullRequestCard:
+    - key: pr-risk-panel
+      resource: main
+      resolver:
+        function: getRiskAnalysis
+      title: Code Risk Analysis
+
+resources:
+  - key: main
+    path: frontend/dist

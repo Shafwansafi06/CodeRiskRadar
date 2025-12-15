@@ -1,295 +1,186 @@
 import React, { useState, useEffect } from 'react';
-import * as api from './api';
-import Radar from './components/Radar';
-import RiskBreakdown from './components/RiskBreakdown';
-import SimilarIncidents from './components/SimilarIncidents';
-import ActionsPanel from './components/ActionsPanel';
-import ConfirmationModal from './components/ConfirmationModal';
+import { invoke } from '@forge/bridge';
+import './styles.css';
 
-/**
- * Main App Component
- * Orchestrates risk analysis UI for PR sidebar
- */
 function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [modalState, setModalState] = useState({
-    isOpen: false,
-    action: null,
-    preview: null,
-    onConfirm: null
-  });
+  const [darkMode, setDarkMode] = useState(true);
 
-  // Load initial data
   useEffect(() => {
-    loadAnalysis();
+    loadData();
   }, []);
 
-  /**
-   * Load or refresh risk analysis
-   */
-  const loadAnalysis = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const result = await api.getRiskAnalysis();
-      setData(result);
-    } catch (err) {
-      setError(err.message || 'Failed to load risk analysis');
-      console.error('Error loading analysis:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Handle refresh button
-   */
-  const handleRefresh = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const result = await api.refreshAnalysis();
+      setError(null);
+      const result = await invoke('getRiskAnalysis', {});
+      console.log('📊 Risk Data:', result);
       setData(result);
     } catch (err) {
-      setError('Failed to refresh analysis');
-      console.error('Error refreshing:', err);
+      console.error('Error loading data:', err);
+      setError(err.message || 'Failed to load risk analysis');
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * Handle Jira task creation
-   */
-  const handleCreateJiraTask = async () => {
-    try {
-      // Get preview first
-      const previewResult = await api.createJiraTask(data.risk_analysis, false);
-      
-      if (previewResult.requires_confirmation) {
-        // Show confirmation modal
-        setModalState({
-          isOpen: true,
-          action: 'Create Jira Task',
-          preview: previewResult.preview,
-          onConfirm: async () => {
-            try {
-              const result = await api.createJiraTask(data.risk_analysis, true);
-              alert(`✅ Jira task created: ${result.task_key}\n${result.task_url}`);
-              setModalState({ isOpen: false, action: null, preview: null, onConfirm: null });
-            } catch (err) {
-              alert(`❌ Failed to create Jira task: ${err.message}`);
-            }
-          }
-        });
-      }
-    } catch (err) {
-      alert(`❌ Failed to preview Jira task: ${err.message}`);
-    }
+  const getRiskLevel = (score) => {
+    if (score < 0.4) return 'low';
+    if (score < 0.7) return 'medium';
+    return 'high';
   };
 
-  /**
-   * Handle PR comment posting
-   */
-  const handlePostPRComment = async () => {
-    try {
-      // Get preview first
-      const previewResult = await api.postPRComment(data.risk_analysis, false);
-      
-      if (previewResult.requires_confirmation) {
-        // Show confirmation modal
-        setModalState({
-          isOpen: true,
-          action: 'Post PR Comment',
-          preview: previewResult.preview,
-          onConfirm: async () => {
-            try {
-              const result = await api.postPRComment(data.risk_analysis, true);
-              alert(`✅ PR comment posted!\n${result.comment_url}`);
-              setModalState({ isOpen: false, action: null, preview: null, onConfirm: null });
-            } catch (err) {
-              alert(`❌ Failed to post PR comment: ${err.message}`);
-            }
-          }
-        });
-      }
-    } catch (err) {
-      alert(`❌ Failed to preview PR comment: ${err.message}`);
-    }
+  const getRiskLabel = (score) => {
+    if (score < 0.4) return 'Low Risk';
+    if (score < 0.7) return 'Medium Risk';
+    return 'High Risk';
   };
 
-  /**
-   * Close modal
-   */
-  const handleCloseModal = () => {
-    setModalState({ isOpen: false, action: null, preview: null, onConfirm: null });
-  };
-
-  // Render loading state
-  if (loading && !data) {
+  if (loading) {
     return (
-      <div className="app-container">
-        <div className="loading-state">
-          <div className="spinner" aria-label="Loading"></div>
-          <p>Analyzing PR for risks...</p>
+      <div className={`risk-radar-app ${darkMode ? 'dark' : ''}`}>
+        <div className="rr-content">
+          <div className="rr-loading">
+            <div>Loading...</div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Render error state
-  if (error && !data) {
+  if (error) {
     return (
-      <div className="app-container">
-        <div className="error-state">
-          <div className="error-icon" aria-hidden="true">⚠️</div>
-          <h2>Failed to Load Analysis</h2>
-          <p>{error}</p>
-          <button onClick={loadAnalysis} className="btn btn-primary">
-            Retry
-          </button>
+      <div className={`risk-radar-app ${darkMode ? 'dark' : ''}`}>
+        <div className="rr-content">
+          <div className="rr-section">
+            <p>{error}</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Extract risk data
-  const riskAnalysis = data?.risk_analysis || {};
-  const historicalContext = data?.historical_context || {};
-  const metadata = data?.metadata || {};
+  const riskLevel = getRiskLevel(data.risk_score);
+  const riskPercent = Math.round(data.risk_score * 100);
 
   return (
-    <div className="app-container">
-      {/* Header */}
-      <header className="app-header">
-        <div className="header-content">
-          <h1 className="app-title">
-            <span className="risk-icon" aria-hidden="true">🛡️</span>
-            Code Risk Radar
-          </h1>
-          <button 
-            onClick={handleRefresh}
-            className="btn btn-icon"
-            aria-label="Refresh analysis"
-            disabled={loading}
-          >
-            <span className={loading ? 'spinner-small' : ''}>↻</span>
-          </button>
+    <div className={`risk-radar-app ${darkMode ? 'dark' : ''}`}>
+      <div className="rr-header">
+        <div>
+          <div className="rr-logo">⚡</div>
         </div>
-        
-        {/* Risk Score Banner */}
-        <div className={`risk-banner risk-${riskAnalysis.risk_level}`}>
-          <span className="risk-score-label">Risk Level:</span>
-          <span className="risk-score-value">
-            {riskAnalysis.risk_level?.toUpperCase() || 'UNKNOWN'}
-          </span>
-          <span className="risk-score-numeric">
-            {(riskAnalysis.risk_score * 100).toFixed(0)}%
-          </span>
+        <div>
+          <h1>Risk Radar</h1>
+          <p>AI-Powered Analysis</p>
         </div>
-      </header>
+        <button onClick={() => setDarkMode(!darkMode)}>
+          {darkMode ? '☀️' : '🌙'}
+        </button>
+      </div>
 
-      {/* Main Content */}
-      <main className="app-main">
-        {/* Explanation */}
-        {riskAnalysis.explanation && (
-          <section className="explanation-section">
-            <h2 className="section-title">Analysis</h2>
-            <p className="explanation-text">{riskAnalysis.explanation}</p>
-          </section>
-        )}
-
-        {/* Radar Chart */}
-        {riskAnalysis.top_features && riskAnalysis.top_features.length > 0 && (
-          <section className="radar-section">
-            <h2 className="section-title">Risk Factors</h2>
-            <Radar features={riskAnalysis.top_features} />
-          </section>
-        )}
-
-        {/* Risk Breakdown */}
-        {riskAnalysis.actions && riskAnalysis.actions.length > 0 && (
-          <section className="breakdown-section">
-            <h2 className="section-title">Recommended Actions</h2>
-            <RiskBreakdown actions={riskAnalysis.actions} />
-          </section>
-        )}
-
-        {/* Similar Incidents */}
-        {historicalContext.similar_incidents && historicalContext.similar_incidents.length > 0 && (
-          <section className="similar-section">
-            <h2 className="section-title">Similar Past Incidents</h2>
-            <SimilarIncidents 
-              incidents={historicalContext.similar_incidents}
-              patterns={historicalContext.patterns}
-              recommendations={historicalContext.recommendations}
-            />
-          </section>
-        )}
-
-        {/* Actions Panel */}
-        <section className="actions-section">
-          <h2 className="section-title">Actions</h2>
-          <ActionsPanel 
-            onCreateJiraTask={handleCreateJiraTask}
-            onPostPRComment={handlePostPRComment}
-            disabled={loading}
-          />
-        </section>
-
-        {/* Metadata Footer */}
-        {metadata.file_path && (
-          <footer className="metadata-footer">
-            <details>
-              <summary>Analysis Metadata</summary>
-              <dl className="metadata-list">
-                {metadata.file_path && (
-                  <>
-                    <dt>File:</dt>
-                    <dd><code>{metadata.file_path}</code></dd>
-                  </>
-                )}
-                {metadata.pr_number && (
-                  <>
-                    <dt>PR:</dt>
-                    <dd>#{metadata.pr_number}</dd>
-                  </>
-                )}
-                {metadata.author && (
-                  <>
-                    <dt>Author:</dt>
-                    <dd>{metadata.author}</dd>
-                  </>
-                )}
-                {metadata.branch && (
-                  <>
-                    <dt>Branch:</dt>
-                    <dd><code>{metadata.branch}</code></dd>
-                  </>
-                )}
-              </dl>
-            </details>
-          </footer>
-        )}
-      </main>
-
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={modalState.isOpen}
-        action={modalState.action}
-        preview={modalState.preview}
-        onConfirm={modalState.onConfirm}
-        onCancel={handleCloseModal}
-      />
-
-      {/* Dev Mode Indicator */}
-      {!api.isForgeEnvironment && (
-        <div className="dev-mode-indicator" role="status">
-          🔧 Development Mode - Using Mock Data
+      <div className="rr-content">
+        {/* Risk Score */}
+        <div className="rr-section">
+          <div className="rr-risk-circle">
+            <div className="rr-risk-score">{riskPercent}</div>
+            <div className={`rr-risk-badge ${riskLevel}`}>
+              {getRiskLabel(data.risk_score)}
+            </div>
+            {data.dataSource && (
+              <div className="rr-badge success">
+                {data.dataSource}
+              </div>
+            )}
+            {data.version && (
+              <div className="rr-badge info">
+                {data.version}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+
+        {/* Stats */}
+        <div className="rr-stats">
+          <div className="rr-stat">
+            <div className="rr-stat-value additions">+{data.stats?.additions || 0}</div>
+            <div className="rr-stat-label">Additions</div>
+          </div>
+          <div className="rr-stat">
+            <div className="rr-stat-value deletions">-{data.stats?.deletions || 0}</div>
+            <div className="rr-stat-label">Deletions</div>
+          </div>
+          <div className="rr-stat">
+            <div className="rr-stat-value files">{data.stats?.changedFiles || 0}</div>
+            <div className="rr-stat-label">Files</div>
+          </div>
+        </div>
+
+        {/* Risk Factors */}
+        <div className="rr-section">
+          <h3>Risk Factors</h3>
+          {data.factors && Object.entries(data.factors).map(([key, value]) => {
+            const level = getRiskLevel(value);
+            const percent = Math.round(value * 100);
+            return (
+              <div key={key} className="rr-factor">
+                <div className="rr-factor-header">
+                  <span className="rr-factor-label">{key}</span>
+                  <span className="rr-factor-value">{percent}%</span>
+                </div>
+                <div className="rr-progress">
+                  <div 
+                    className={`rr-progress-bar ${level}`}
+                    data-percent={Math.round(percent / 10) * 10}
+                    role="progressbar"
+                    aria-valuenow={percent}
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Files Changed */}
+        {data.filesChanged && data.filesChanged.length > 0 && (
+          <div className="rr-section">
+            <h3>Files Changed ({data.filesChanged.length})</h3>
+            {data.filesChanged.slice(0, 5).map((file, idx) => {
+              const fileRiskLevel = getRiskLevel(file.risk_score || 0);
+              return (
+                <div key={idx} className="rr-file">
+                  <div className="rr-file-header">
+                    <span className="rr-file-name">{file.filename}</span>
+                    <span className={`rr-file-risk ${fileRiskLevel}`}>
+                      {Math.round((file.risk_score || 0) * 100)}%
+                    </span>
+                  </div>
+                  <div>
+                    +{file.additions || 0} -{file.deletions || 0} ({file.changes || 0} changes)
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Suggestions */}
+        {data.suggestions && data.suggestions.length > 0 && (
+          <div className="rr-section">
+            <h3>AI Suggestions ({data.suggestions.length})</h3>
+            {data.suggestions.slice(0, 3).map((suggestion, idx) => (
+              <div key={idx} className="rr-suggestion">
+                <div className="rr-suggestion-title">{suggestion.title}</div>
+                <div className="rr-suggestion-desc">{suggestion.description}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

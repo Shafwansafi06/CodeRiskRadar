@@ -1,0 +1,301 @@
+[
+  {
+    "id": "a9f96921-39f8-47a6-ac37-d658ad547bbc",
+    "doc_id": "microsoft/mcp/pr/1359",
+    "title": "[In progress] Uvx support",
+    "body": "## What does this PR do?\r\n`[Provide a clear, concise description of the changes]`\r\n\r\nAdd uvx support.\r\n\r\n`[Any additional context, screenshots, or information that helps reviewers]`\r\n\r\n## GitHub issue number?\r\n`[Link to the GitHub issue this PR addresses]`\r\n\r\n## Pre-merge Checklist\r\n- [ ] Required for All PRs\r\n    - [ ] **Read [contribution guidelines](https://github.com/microsoft/mcp/blob/main/CONTRIBUTING.md)**\r\n    - [ ] PR title clearly describes the change\r\n    - [ ] Commit history is clean with descriptive messages ([cleanup guide](https://github.com/Azure/azure-powershell/blob/master/documentation/development-docs/cleaning-up-commits.md))\r\n    - [ ] Added comprehensive tests for new/modified functionality\r\n    - [ ] Updated `servers/Azure.Mcp.Server/CHANGELOG.md` and/or `servers/Fabric.Mcp.Server/CHANGELOG.md` for product changes (`features, bug fixes, UI/UX, updated dependencies`)\r\n- [ ] For MCP tool changes:\r\n    - [ ] **One tool per PR**: This PR adds or modifies only one MCP tool for faster review cycles\r\n    - [ ] Updated `servers/Azure.Mcp.Server/README.md` and/or `servers/Fabric.Mcp.Server/README.md` documentation\r\n    - [ ] Validate README.md changes using script at `eng/scripts/Process-PackageReadMe.ps1`. See [Package README](https://github.com/microsoft/mcp/blob/main/CONTRIBUTING.md#package-readme)\r\n    - [ ] Updated command list in `/servers/Azure.Mcp.Server/docs/azmcp-commands.md` and/or `/docs/fabric-commands.md`\r\n    - [ ] Run `.\\eng\\scripts\\Update-AzCommandsMetadata.ps1` to update tool metadata in azmcp-commands.md (required for CI)\r\n    - [ ] For new or modified tool descriptions, ran [`ToolDescriptionEvaluator`](https://github.com/microsoft/mcp/blob/main/eng/tools/ToolDescriptionEvaluator/Quickstart.md) and obtained a score of `0.4` or more and a top 3 ranking for all related test prompts\r\n    - [ ] For tools with new names, including new tools or renamed tools, update [`consolidated-tools.json`](https://github.com/microsoft/mcp/blob/main/core/Azure.Mcp.Core/src/Areas/Server/Resources/consolidated-tools.json)\r\n    - [ ] For new tools associated with Azure services or publicly available tools/APIs/products, add URL to documentation in the PR description\r\n- [ ] Extra steps for **Azure MCP Server** tool changes:\r\n    - [ ] Updated test prompts in `/servers/Azure.Mcp.Server/docs/e2eTestPrompts.md`\r\n    - [ ] 👉 For Community (non-Microsoft team member) PRs:\r\n        - [ ] **Security review**: Reviewed code for security vulnerabilities, malicious code, or suspicious activities before running tests (`crypto mining, spam, data exfiltration, etc.`)\r\n        - [ ] **Manual tests run**: added comment `/azp run mcp - pullrequest - live` to run *Live Test Pipeline*\r\n    \r\n",
+    "additions": 902,
+    "deletions": 3,
+    "changed_files": 9,
+    "labels": [],
+    "organization": "microsoft",
+    "quality_score": 0.7
+  },
+  {
+    "id": "60a2ad74-0f84-49dd-85ff-39a4730efed1",
+    "doc_id": "elastic/terraform-provider-elasticstack/pr/1541",
+    "title": "Fix inconsistent result after apply for empty cluster/run_as arrays",
+    "body": "The provider throws \"inconsistent result after apply\" when `cluster` or `run_as` are explicitly set to empty arrays. The API returns empty arrays, but the provider was converting them to `null`, causing a mismatch with the planned empty set.\n\n**Changes**\n\n- **Added `preserveNullForEmptyStringSlice` helper** that distinguishes between:\n  - Unset attribute (`null` in config) → preserves `null` in state\n  - Explicit empty array (`[]` in config) → creates empty set in state\n\n- **Applied helper to `cluster` and `run_as` fields** in `fromAPIModel` to handle empty arrays correctly\n\n**Example**\n\nThis configuration now works without inconsistency errors:\n\n```hcl\nresource \"elasticstack_elasticsearch_security_role\" \"example\" {\n  name    = \"datastreams_read\"\n  cluster = []  # Previously caused: \"was cty.SetValEmpty, but now null\"\n  run_as  = []\n\n  indices {\n    names      = [\"logs-*\"]\n    privileges = [\"read\"]\n  }\n}\n```\n\n<!-- START COPILOT ORIGINAL PROMPT -->\n\n\n\n<details>\n\n<summary>Original prompt</summary>\n\n> \n> ----\n> \n> *This section details on the original issue you should resolve*\n> \n> <issue_title>[0.13.0] Provider produces inconsistent result after apply in elasticstack_elasticsearch_security_role</issue_title>\n> <issue_description>**Describe the bug**\n> When applying changes to an elasticstack_elasticsearch_security_role resource, the provider produces an inconsistent result where the run_as attribute changes from an empty set to null between plan and apply phases.\n> \n> \n> ```\n> elasticstack_elasticsearch_security_role.datastreams_read: Creating...\n> ╷\n> │ Error: Provider produced inconsistent result after apply\n> │\n> │ When applying changes to elasticstack_elasticsearch_security_role.datastreams_read, provider \"provider[\\\"registry.terraform.io/elastic/elasticstack\\\"]\" produced an unexpected new\n> │ value: .cluster: was cty.SetValEmpty(cty.String), but now null.\n> │\n> │ This is a bug in the provider, which should be reported in the provider's own issue tracker.\n> ```\n> \n> **To Reproduce**\n> ```\n> terraform {\n>   required_providers {\n>     elasticstack = {\n>       source  = \"elastic/elasticstack\"\n>       version = \"0.13.0\"  # Adjust this to test different versions\n>     }\n>   }\n> }\n> \n> provider \"elasticstack\" {\n>   elasticsearch {\n>     endpoints = [\"http://localhost:9200\"]\n>     username  = \"\"\n>     password  = \"\"\n>   }\n> }\n> \n> resource \"elasticstack_elasticsearch_security_role\" \"datastreams_read\" {\n>   name    = \"datastreams_read\"\n>   cluster = []\n> \n>   indices {\n>     names      = [\"cluster-*\", \"logs-*\", \"metrics-*-*\", \"service-*\", \"synthetics-*-*\", \"traces-*-*\"]\n>     privileges = [\"read\", \"view_index_metadata\", \"read_cross_cluster\", \"monitor\"]\n>     field_security {\n>       grant = [\"*\"]\n>     }\n>   }\n> \n>   run_as = []\n> \n>   metadata = jsonencode({})\n> }\n> ```\n> \n> The error does not occur with earlier versions.\n> \n> \n> **Debug output**\n> ```\n> \n> ```\n> \n> **Screenshots**\n> If applicable, add screenshots to help explain your problem.\n> \n> **Versions (please complete the following information):**\n>  - OS: [e.g. Linux]\n>  - Terraform Version [e.g. 1.0.0]\n>  - Provider version [e.g. v0.13.0]\n>  - Elasticsearch Version [e.g. 7.16.0]\n> \n> **Additional context**\n> Add any other context about the problem here. Links to specific affected code files and paths here are also extremely useful (if known).\n> </issue_description>\n> \n> ## Comments on the Issue (you are @copilot in this section)\n> \n> <comments>\n> <comment_new><author>@neiljbrookes</author><body>\n> ```\n> ---[ RESPONSE ]--------------------------------------\n> HTTP/1.1 200 OK\n> Content-Type: application/json\n> X-Elastic-Product: Elasticsearch\n> \n> {\n>   \"name\" : \"e1c5f05e3dd9\",\n>   \"cluster_name\" : \"docker-cluster\",\n>   \"cluster_uuid\" : \"8OixojMTTKSxd1W0HVBH4g\",\n>   \"version\" : {\n>     \"number\" : \"9.2.2\",\n>     \"build_flavor\" : \"default\",\n>     \"build_type\" : \"docker\",\n>     \"build_hash\" : \"ed771e6976fac1a085affabd45433234a4babeaf\",\n>     \"build_date\" : \"2025-11-27T08:06:51.614397514Z\",\n>     \"build_snapshot\" : false,\n>     \"lucene_version\" : \"10.3.2\",\n>     \"minimum_wire_compatibility_version\" : \"8.19.0\",\n>     \"minimum_index_compatibility_version\" : \"8.0.0\"\n>   },\n>   \"tagline\" : \"You Know, for Search\"\n> }\n> \n> -----------------------------------------------------: @module=elasticstack tf_req_id=65fbba6f-1e0f-6c1b-52b2-0db8493d7cd3 tf_resource_type=elasticstack_elasticsearch_security_role tf_mux_provider=\"*proto6server.Server\" tf_provider_addr=registry.terraform.io/elastic/elasticstack tf_rpc=ApplyResourceChange @caller=github.com/elastic/terraform-provider-elasticstack/internal/clients/config/debug.go:70 timestamp=2025-12-10T17:17:44.482Z\n> 2025-12-10T17:17:44.482Z [TRACE] provider.terraform-provider-elasticstack_v0.13.0: cluster UUID: 8OixojMTTKSxd1W0HVBH4g: tf_mux_provider=\"*proto6server.Server\" tf_req_id=65fbba6f-1e0f-6c1b-52b2-0db8493d7cd3 @caller=github.com/elastic/terraform-provider-elasticstack/internal/clients/api_client.go:469 tf_provider_addr=registry.terraform.io/elastic/elasticstack tf_resource_type=elasticstack_elasticsearch_security_role tf_rpc=ApplyResourceChange @module=elasticstack timestamp=2025-12-10T17:17:44.482Z\n> 2025-12-10T17:17:44.489Z [DEBUG] provider.terraform-provider-elasticstack_v0.13.0: elasticsearch request [PUT http://localhost:9200/_security/role/datastreams_read] executed. Took 6.692ms. <nil>: tf_provider_addr=registry.terraform.io/elastic/elasticstack tf_resource_type=elasticstack_elasticsearch_security_role tf_req_id=65fbba6f-1e0f-6c1b-52b2-0db8493d7cd3 tf_rpc=ApplyResou...</body></comment_new>\n> </comments>\n> \n\n\n</details>\n\n\n\n<!-- START COPILOT CODING AGENT SUFFIX -->\n\n- Fixes elastic/terraform-provider-elasticstack#1538\n\n<!-- START COPILOT CODING AGENT TIPS -->\n---\n\n💬 We'd love your input! Share your thoughts on Copilot coding agent in our [2 minute survey](https://gh.io/copilot-coding-agent-survey).\n",
+    "additions": 71,
+    "deletions": 18,
+    "changed_files": 4,
+    "labels": [],
+    "organization": "elastic",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "2a591ddc-e7e2-4d82-9c2c-41f8aaa929c0",
+    "doc_id": "apache/iceberg-rust/pr/1922",
+    "title": "fix: restore no-op logic in constants_map for NULL identity-partitioned columns",
+    "body": "## Which issue does this PR close?\r\n\r\n<!--\r\nWe generally require a GitHub issue to be filed for all bug fixes and enhancements and this helps us generate change logs for our releases. You can link an issue to this PR using the GitHub syntax. For example `Closes #123` indicates that this PR will close issue #123.\r\n-->\r\n\r\nSee https://github.com/apache/iceberg-rust/pull/1824#discussion_r2584486989 and https://github.com/apache/iceberg-rust/issues/1914#issuecomment-3634315005\r\n\r\n## What changes are included in this PR?\r\n\r\n<!--\r\nProvide a summary of the modifications in this PR. List the main changes such as new features, bug fixes, refactoring, or any other updates.\r\n-->\r\n\r\nThis restores the behavior in `record_batch_transformer.rs`'s `constants_map` function to pre-#1824 behavior where `NULL`s are not inserted into the constants map, and instead are just skipped. This allows the column projection rules for missing partition values to default to `NULL`.\r\n\r\n## Are these changes tested?\r\n\r\n<!--\r\nSpecify what test covers (unit test, integration test, etc.).\r\n\r\nIf tests are not included in your PR, please explain why (for example, are they covered by existing tests)?\r\n-->\r\n\r\nNew test, and running the entire Iceberg Java suite via DataFusion Comet in https://github.com/apache/datafusion-comet/pull/2729.",
+    "additions": 73,
+    "deletions": 8,
+    "changed_files": 1,
+    "labels": [],
+    "organization": "apache",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "33752781-ac78-4626-a970-93b1b7434243",
+    "doc_id": "apache/jackrabbit-oak/pr/2656",
+    "title": "Index optimizer updates",
+    "body": "- Find inefficient queries as well as slow queries\r\n- Add tags to index config generator",
+    "additions": 51,
+    "deletions": 9,
+    "changed_files": 4,
+    "labels": [],
+    "organization": "apache",
+    "quality_score": 0.7999999999999999
+  },
+  {
+    "id": "8165ca11-dbe2-45ae-a0af-8430448e8779",
+    "doc_id": "microsoft/clarity/pr/997",
+    "title": "Add block scoping to all switch case statements in layout.ts",
+    "body": "The switch statement in `layout.ts` processes different HTML tag types. Only the `SCRIPT` case had block scoping to prevent variable name collisions between cases. All other cases declare variables (e.g., `linkElement`, `styleElement`, `imgElement`) without block scope, risking unintentional variable shadowing.\n\n## Changes\n\n- Wrapped all case blocks in the main tag processing switch statement with curly braces\n- Ensures variables declared in each case (e.g., `let linkElement`, `let styleElement`) are scoped to that case only\n- Prevents potential variable conflicts between different tag processing paths\n\n```typescript\n// Before: unscoped variable declarations\ncase \"LINK\":\n    let linkElement = this.element(node.id) as HTMLLinkElement;\n    // ...\n    break;\ncase \"STYLE\":\n    let styleElement = this.element(node.id) as HTMLStyleElement;\n    // ...\n    break;\n\n// After: each case properly scoped\ncase \"LINK\": {\n    let linkElement = this.element(node.id) as HTMLLinkElement;\n    // ...\n    break;\n}\ncase \"STYLE\": {\n    let styleElement = this.element(node.id) as HTMLStyleElement;\n    // ...\n    break;\n}\n```\n\nThis aligns all cases with the pattern already established for the `SCRIPT` case.\n\n<!-- START COPILOT CODING AGENT TIPS -->\n---\n\n💬 We'd love your input! Share your thoughts on Copilot coding agent in our [2 minute survey](https://gh.io/copilot-coding-agent-survey).\n",
+    "additions": 0,
+    "deletions": 0,
+    "changed_files": 0,
+    "labels": [],
+    "organization": "microsoft",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "d058e2ae-07de-443a-9b75-07e7b64a0dbf",
+    "doc_id": "apache/trafficserver/pr/12751",
+    "title": "Rename `Stripte` identifier prefix to `Stripe`",
+    "body": "The `StripteHeaderFooter` typo was introduced in 14f2d496aa and reported by Leif.",
+    "additions": 36,
+    "deletions": 36,
+    "changed_files": 6,
+    "labels": [
+      "Cache",
+      "Cleanup"
+    ],
+    "organization": "apache",
+    "quality_score": 0.8999999999999999
+  },
+  {
+    "id": "d466e94e-343e-4624-b6bb-21b401dd7820",
+    "doc_id": "microsoft/WSL/pr/13873",
+    "title": "Pass --time to nerdctl stop to avoid timeouts when stopping stuck con…",
+    "body": "…tainers\r\n\r\n<!-- Enter a brief description/summary of your PR here. What does it fix/what does it change/how was it tested (even manually, if necessary)? -->\r\n## Summary of the Pull Request\r\n\r\nThis change solves multiple issues in the Stop() implementation:\r\n\r\n- Use WaitAndCaptureOutput() to consume the nerdctl stop process output to avoid potential pipe deadlocks\r\n- Pass the timeout to nerdctl via --time so that the container is killed after the user provided timeout (this allows a user to pass 0 to immediately kill the container) \r\n\r\n<!-- Please review the items on the PR checklist before submitting-->\r\n## PR Checklist\r\n\r\n- [ ] **Closes:** Link to issue #xxx\r\n- [ ] **Communication:** I've discussed this with core contributors already. If work hasn't been agreed, this work might be rejected\r\n- [ ] **Tests:** Added/updated if needed and all pass\r\n- [ ] **Localization:** All end user facing strings can be localized\r\n- [ ] **Dev docs:** Added/updated if needed\r\n- [ ] **Documentation updated:** If checked, please file a pull request on [our docs repo](https://github.com/MicrosoftDocs/wsl/) and link it here: #xxx\r\n\r\n<!-- Provide a more detailed description of the PR, other things fixed or any additional comments/features here -->\r\n## Detailed Description of the Pull Request / Additional comments\r\n\r\n<!-- Describe how you validated the behavior. Add automated tests wherever possible, but list manual validation steps taken as well -->\r\n## Validation Steps Performed\r\n",
+    "additions": 5,
+    "deletions": 4,
+    "changed_files": 1,
+    "labels": [],
+    "organization": "microsoft",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "02ba71b4-5f88-4b77-954e-a3332c962cdd",
+    "doc_id": "apache/datafusion/pr/19271",
+    "title": "fix: spark crc32 custom nullability",
+    "body": "## Which issue does this PR close?\r\n\r\n<!--\r\nWe generally require a GitHub issue to be filed for all bug fixes and enhancements and this helps us generate change logs for our releases. You can link an issue to this PR using the GitHub syntax. For example `Closes #123` indicates that this PR will close issue #123.\r\n-->\r\n\r\n- Closes #19157 \r\n\r\n## Rationale for this change\r\n\r\n<!--\r\n Why are you proposing this change? If this is already explained clearly in the issue then this section is not needed.\r\n Explaining clearly why changes are proposed helps reviewers understand your changes and offer better suggestions for fixes.  \r\n-->\r\nThe `crc32` UDF was using the default return_type implementation which does not preserve nullability information [Spark CRC32](https://github.com/apache/spark/blob/master/sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/expressions/hash.scala#L213-L240)\r\n* Only returns the data type (Int64)\r\n* Doesn't consider nullability of inputs\r\n* Would always mark output as non-nullable\r\n\r\n\r\n## What changes are included in this PR?\r\n\r\n<!--\r\nThere is no need to duplicate the description in the issue here but it is sometimes worth providing a summary of the individual changes in this PR.\r\n-->\r\n* Implemented `return_field_from_args`: Creates a field with Int64 type and correctly propagates nullability from input fields and scalar arguments\r\n* Updated `return_type`: Now returns an error directing users to use return_field_from_args instead\r\n* Added necessary imports: `Field`, `FieldRef`, and `ReturnFieldArgs` to support the new implementation\r\n* Added comprehensive nullability tests: Verifies that nullable inputs, non-nullable inputs, and null scalar literals are handled correctly\r\n\r\n## Are these changes tested?\r\n\r\n<!--\r\nWe typically require tests for all PRs in order to:\r\n1. Prevent the code from being accidentally broken by subsequent changes\r\n2. Serve as another way to document the expected behavior of the code\r\n\r\nIf tests are not included in your PR, please explain why (for example, are they covered by existing tests)?\r\n-->\r\n* Non-nullable Binary input produces non-nullable Int64 output\r\n* Nullable Binary input produces nullable Int64 output\r\n* Null scalar literal (e.g., crc32(NULL)) produces nullable Int64 output\r\n* Data type is correctly set to Int64 in all cases\r\n\r\n## Are there any user-facing changes?\r\n\r\n<!--\r\nIf there are user-facing changes then we may require documentation to be updated before approving the PR.\r\n-->\r\n\r\n<!--\r\nIf there are any breaking changes to public APIs, please add the `api change` label.\r\n-->\r\nThis is a bug fix that corrects schema metadata only, it does not change the actual computation or introduce any breaking changes to the API.",
+    "additions": 53,
+    "deletions": 4,
+    "changed_files": 1,
+    "labels": [
+      "spark"
+    ],
+    "organization": "apache",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "8d8d3d0e-a8fe-443f-8d80-042c63229c28",
+    "doc_id": "microsoft/fhir-server/pr/5271",
+    "title": "Adding UniqueResourceGroupName to CI variables for tests",
+    "body": "## Description\r\n\r\nAdding UniqueResourceGroupName to CI variables for tests\r\n\r\n## Related issues\r\nAddresses [AB#166378](https://microsofthealth.visualstudio.com/f8da5110-49b1-4e9f-9022-2f58b6124ff9/_workitems/edit/166378).\r\n\r\n## Testing\r\nDescribe how this change was tested.\r\n\r\n## FHIR Team Checklist\r\n- **Update the title** of the PR to be succinct and less than 65 characters\r\n- **Add a milestone** to the PR for the sprint that it is merged (i.e. add S47)\r\n- Tag the PR with the type of update: **Bug**, **Build**, **Dependencies**, **Enhancement**, **New-Feature** or **Documentation**\r\n- Tag the PR with **Open source**, **Azure API for FHIR** (CosmosDB or common code) or **Azure Healthcare APIs** (SQL or common code) to specify where this change is intended to be released.\r\n- Tag the PR with **Schema Version backward compatible** or **Schema Version backward incompatible** or **Schema Version unchanged** if this adds or updates Sql script which is/is not backward compatible with the code.\r\n- When changing or adding behavior, if your code modifies the system design or changes design assumptions, please create and include an [ADR](https://github.com/microsoft/fhir-server/blob/main/docs/arch).\r\n- [ ] CI is green before merge [![Build Status](https://microsofthealthoss.visualstudio.com/FhirServer/_apis/build/status/CI%20Build%20%26%20Deploy?branchName=main)](https://microsofthealthoss.visualstudio.com/FhirServer/_build/latest?definitionId=27&branchName=main) \r\n- Review [squash-merge requirements](https://github.com/microsoft/fhir-server/blob/main/SquashMergeRequirements.md)\r\n\r\n### Semver Change ([docs](https://github.com/microsoft/fhir-server/blob/main/docs/Versioning.md))\r\nPatch|Skip|Feature|Breaking (reason)\r\n",
+    "additions": 1,
+    "deletions": 0,
+    "changed_files": 1,
+    "labels": [
+      "Build"
+    ],
+    "organization": "microsoft",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "ceabc5b6-5cc1-4399-85ee-b62abc85c212",
+    "doc_id": "microsoft/pxt/pr/11005",
+    "title": "Update documentation workflow for improved PR information retrieval",
+    "body": "The copilot CLI wasn't correctlypulling all commits in a PR and only analyzinf the latest commit. This change attempts to fix it\n",
+    "additions": 18,
+    "deletions": 6,
+    "changed_files": 2,
+    "labels": [],
+    "organization": "microsoft",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "ace8af4d-8801-48cd-a3c8-fbb40211ed8b",
+    "doc_id": "microsoft/onnxruntime/pr/26765",
+    "title": "Bring IR_VERSION and some other changes into provider_api.h",
+    "body": "### Description\r\nCopy the most recent changes and update IR_VERSION in provider_api.h\r\nwhich was lost during the most recent update.\r\n\r\n\r\n### Motivation and Context\r\nSome changes from the most recent ONNX update did not make it to provider_api.h.\r\nThis causes the max version check with version 11 fail for the newly created models for DLL based EPs\r\neven though compiled from the same tree.\r\n",
+    "additions": 3,
+    "deletions": 1,
+    "changed_files": 1,
+    "labels": [],
+    "organization": "microsoft",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "b0c696f6-892e-4997-a3d1-b36c0a06e5a6",
+    "doc_id": "apache/incubator-gluten/pr/11278",
+    "title": "Replace implicit output_schema in RelRoot with explicit ProjectRel for type enforcement",
+    "body": "Summary\r\n\r\nThis refactors how output schema conformance (nullability and type casting) is enforced\r\nfor the ClickHouse backend. Previously, an output_schema field was added to the RelRoot\r\nproto message, and the C++ parser would implicitly add a final projection step if types\r\ndidn't match. This approach was non-standard and made the type conversion invisible in\r\nthe plan.\r\n\r\nNow, when the expected output schema differs from the child plan's output (e.g., in\r\nunion operations), an explicit ProjectRel with cast expressions is added to the\r\nSubstrait plan on the Spark side. This makes the type enforcement visible in the plan\r\nand follows standard Substrait conventions.\r\n\r\nChanges\r\n\r\n- Add createOutputCastProjectRel() in WholeStageTransformer to generate a ProjectRel with casts when needed\r\n- Remove output_schema field from RelRoot proto message\r\n- Remove outputSchema parameter from PlanBuilder and PlanNode\r\n- Remove implicit type conversion logic from ClickHouse's SerializedPlanParser::adjustOutput()\r\n- Remove needOutputSchemaForPlan() from BackendSettingsApi and CHBackend\r\n\r\nBenefits\r\n\r\n- Explicit over implicit: Type conversions are visible as a ProjectRel in the plan\r\n- Standard Substrait: No longer using a Gluten-specific extension to RelRoot\r\n- Simpler native code: ClickHouse parses the plan without special post-processing\r\n- Better debugging: The plan clearly shows where casts occur\r\n\r\nTest Plan\r\n\r\n- Verify ClickHouse union tests pass (issue-1874 regression tests)\r\n- Verify nullable column handling in union operations\r\n- Run ClickHouse TPCH test suite",
+    "additions": 65,
+    "deletions": 109,
+    "changed_files": 6,
+    "labels": [
+      "CORE",
+      "CLICKHOUSE",
+      "DOCS"
+    ],
+    "organization": "apache",
+    "quality_score": 0.7999999999999999
+  },
+  {
+    "id": "cb530c11-3dc6-4074-b1c1-52b8f00348b8",
+    "doc_id": "elastic/kibana/pr/245926",
+    "title": "[8.19] [Synthetics] Perform clean up delete in batches (#245775)",
+    "body": "# Backport\n\nThis will backport the following commits from `main` to `8.19`:\n - [[Synthetics] Perform clean up delete in batches (#245775)](https://github.com/elastic/kibana/pull/245775)\n\n<!--- Backport version: 10.2.0 -->\n\n### Questions ?\nPlease refer to the [Backport tool documentation](https://github.com/sorenlouv/backport)\n\n<!--BACKPORT [{\"author\":{\"name\":\"Shahzad\",\"email\":\"shahzad31comp@gmail.com\"},\"sourceCommit\":{\"committedDate\":\"2025-12-10T18:40:46Z\",\"message\":\"[Synthetics] Perform clean up delete in batches (#245775)\\n\\n## Summary\\n\\nRefactor code to Perform clean up delete in batches, unit tests have\\nbeen added for the changes.\\n\\nInstead of calling on all found package policies to delete, do a for\\nloop in batches\\n```\\n await fleet.packagePolicyService.delete(soClient, esClient, batch, {\\n      force: true,\\n      spaceIds: ['*'],\\n    });\\n```\",\"sha\":\"287b929c42199a35c23fece3300d1eddc89bb913\",\"branchLabelMapping\":{\"^v9.3.0$\":\"main\",\"^v(\\\\d+).(\\\\d+).\\\\d+$\":\"$1.$2\"}},\"sourcePullRequest\":{\"labels\":[\"release_note:skip\",\"backport:version\",\"v9.3.0\",\"author:actionable-obs\",\"Team:obs-ux-management\",\"v9.2.3\",\"v8.19.9\"],\"title\":\"[Synthetics] Perform clean up delete in batches\",\"number\":245775,\"url\":\"https://github.com/elastic/kibana/pull/245775\",\"mergeCommit\":{\"message\":\"[Synthetics] Perform clean up delete in batches (#245775)\\n\\n## Summary\\n\\nRefactor code to Perform clean up delete in batches, unit tests have\\nbeen added for the changes.\\n\\nInstead of calling on all found package policies to delete, do a for\\nloop in batches\\n```\\n await fleet.packagePolicyService.delete(soClient, esClient, batch, {\\n      force: true,\\n      spaceIds: ['*'],\\n    });\\n```\",\"sha\":\"287b929c42199a35c23fece3300d1eddc89bb913\"}},\"sourceBranch\":\"main\",\"suggestedTargetBranches\":[\"8.19\"],\"targetPullRequestStates\":[{\"branch\":\"main\",\"label\":\"v9.3.0\",\"branchLabelMappingKey\":\"^v9.3.0$\",\"isSourceBranch\":true,\"state\":\"MERGED\",\"url\":\"https://github.com/elastic/kibana/pull/245775\",\"number\":245775,\"mergeCommit\":{\"message\":\"[Synthetics] Perform clean up delete in batches (#245775)\\n\\n## Summary\\n\\nRefactor code to Perform clean up delete in batches, unit tests have\\nbeen added for the changes.\\n\\nInstead of calling on all found package policies to delete, do a for\\nloop in batches\\n```\\n await fleet.packagePolicyService.delete(soClient, esClient, batch, {\\n      force: true,\\n      spaceIds: ['*'],\\n    });\\n```\",\"sha\":\"287b929c42199a35c23fece3300d1eddc89bb913\"}},{\"branch\":\"9.2\",\"label\":\"v9.2.3\",\"branchLabelMappingKey\":\"^v(\\\\d+).(\\\\d+).\\\\d+$\",\"isSourceBranch\":false,\"url\":\"https://github.com/elastic/kibana/pull/245904\",\"number\":245904,\"state\":\"MERGED\",\"mergeCommit\":{\"sha\":\"03c026c2876802f5fe175db71bd791b4fe589abe\",\"message\":\"[9.2] [Synthetics] Perform clean up delete in batches (#245775) (#245904)\\n\\n# Backport\\n\\nThis will backport the following commits from `main` to `9.2`:\\n- [[Synthetics] Perform clean up delete in batches\\n(#245775)](https://github.com/elastic/kibana/pull/245775)\\n\\n\\n\\n### Questions ?\\nPlease refer to the [Backport tool\\ndocumentation](https://github.com/sorenlouv/backport)\\n\\n\\n\\nCo-authored-by: Shahzad <shahzad31comp@gmail.com>\"}},{\"branch\":\"8.19\",\"label\":\"v8.19.9\",\"branchLabelMappingKey\":\"^v(\\\\d+).(\\\\d+).\\\\d+$\",\"isSourceBranch\":false,\"state\":\"NOT_CREATED\"}]}] BACKPORT-->",
+    "additions": 144,
+    "deletions": 7,
+    "changed_files": 2,
+    "labels": [
+      "backport",
+      "author:actionable-obs",
+      "Team:obs-ux-management"
+    ],
+    "organization": "elastic",
+    "quality_score": 0.7999999999999999
+  },
+  {
+    "id": "2bcbbaa3-abaa-4a31-93e4-59eaf6ed7468",
+    "doc_id": "google/site-kit-wp/pr/11907",
+    "title": "Fix WC class references in event provider",
+    "body": "## Summary\n\nDon't force `WC_Product` because this might also be called with `WC_Product_Simple` and will cause errors.\n\nAddresses issue:\n\n- #11049\n\n## Relevant technical choices\n\n<!-- Please describe your changes. -->\n\n## PR Author Checklist\n\n- [ ] My code is tested and passes existing unit tests.\n- [ ] My code has an appropriate set of unit tests which all pass.\n- [ ] My code is backward-compatible with WordPress 5.2 and PHP 7.4.\n- [ ] My code follows the [WordPress](https://make.wordpress.org/core/handbook/best-practices/coding-standards/) coding standards.\n- [ ] My code has proper inline documentation.\n- [ ] I have added a QA Brief on the issue linked above.\n- [ ] I have signed the Contributor License Agreement (see <https://cla.developers.google.com/>).\n\n---------------\n\n_Do not alter or remove anything below. The following sections will be managed by moderators only._\n\n## Code Reviewer Checklist\n\n- [ ] Run the code.\n- [ ] Ensure the acceptance criteria are satisfied.\n- [ ] Reassess the implementation with the IB.\n- [ ] Ensure no unrelated changes are included.\n- [ ] Ensure CI checks pass.\n- [ ] Check Storybook where applicable.\n- [ ] Ensure there is a QA Brief.\n- [ ] Ensure there are no unexpected significant changes to file sizes.\n\n## Merge Reviewer Checklist\n\n- [ ] Ensure the PR has the correct target branch.\n- [ ] Double-check that the PR is okay to be merged.\n- [ ] Ensure the corresponding issue has a ZenHub release assigned.\n- [ ] Add a changelog message to the issue.\n",
+    "additions": 26,
+    "deletions": 15,
+    "changed_files": 1,
+    "labels": [],
+    "organization": "google",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "b8a4e509-0a7a-4641-af1a-a314b87c00f7",
+    "doc_id": "aws/s2n-tls/pr/5663",
+    "title": "chore: Ignore this PR, just testing the CI",
+    "body": "# Goal\r\n<!-- What is the PR doing? -->\r\n\r\n## Why\r\n<!-- Why is this PR necessary? -->\r\n\r\n## How\r\n<!-- How is this PR accomplishing its goals? -->\r\n\r\n## Callouts\r\n<!-- Any specific item to callout? Non-optimal choices, future actions needed, etc -->\r\n\r\n## Testing\r\n<!-- How is it tested? -->\r\n\r\n### Related\r\n<!-- E.g. \"resolves #3456\" -->\r\n\r\n<!-- for significant features includes a release summary -->\r\n<!-- The release summary must be a single line that starts with \"release summary\" -->\r\n<!-- release summary: s2n-tls users can now dance the tango -->\r\n\r\nBy submitting this pull request, I confirm that my contribution is made under the terms of the Apache 2.0 license.\r\n",
+    "additions": 1,
+    "deletions": 0,
+    "changed_files": 1,
+    "labels": [
+      "s2n-core"
+    ],
+    "organization": "aws",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "f1f2f6bf-25ae-4c1a-867f-0c2a03b70d5b",
+    "doc_id": "apache/spark-kubernetes-operator/pr/428",
+    "title": "[SPARK-54677] Upgrade `pmd` to 7.19.0 and apply `EnumComparison` rules",
+    "body": "### What changes were proposed in this pull request?\r\n\r\nThis PR aims to upgrade `pmd` to 7.19.0 and apply `EnumComparison` rules.\r\n\r\n### Why are the changes needed?\r\n\r\nTo prevent a bug like\r\n- #426 \r\n\r\n### Does this PR introduce _any_ user-facing change?\r\n\r\nNo behavior change.\r\n\r\n### How was this patch tested?\r\n\r\nPass the CIs.\r\n\r\n### Was this patch authored or co-authored using generative AI tooling?\r\n\r\nNo.",
+    "additions": 25,
+    "deletions": 26,
+    "changed_files": 10,
+    "labels": [
+      "BUILD",
+      "API",
+      "OPERATOR"
+    ],
+    "organization": "apache",
+    "quality_score": 0.8999999999999999
+  },
+  {
+    "id": "ee657c07-c47f-40b4-af9a-d7847b966e3f",
+    "doc_id": "mozilla/telemetry-airflow/pr/2299",
+    "title": "chore(bqetl_dryrun): Set resources explicitly for dryrun task",
+    "body": "## Description\r\n\r\nThe `bqetl_dryrun.dryun` task has been running very slowly (over an hour usually). After some debugging, setting requested resources explicitly brings down the run time significantly. Tested on dev: https://dev.telemetry-airflow.nonprod.dataservices.mozgcp.net/dags/bqetl_dryrun/grid?tab=logs&dag_run_id=manual__2025-12-10T19%3A08%3A22.655459%2B00%3A00&task_id=dryrun\r\nThe run finishes in around 10 minutes (doesn't include private-bigquery-etl)\r\n\r\nAlso when using the SA instead of cloud function some of the views are failing to dryrun due to permission issues. This can be worked around by using the cloud run function, which performs similarly to the API calls in my tests. \r\n\r\n<!-- \r\nPlease reference related Jira tickets, GitHub issues or Bugzilla. This repo has been \r\nconfigured to automatically insert hyperlinks for DSRE and DENG tickets.\r\nSee https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/configuring-autolinks-to-reference-external-resources\r\n-->\r\n",
+    "additions": 7,
+    "deletions": 1,
+    "changed_files": 1,
+    "labels": [],
+    "organization": "mozilla",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "8ecb0bf3-bf93-4e87-8f24-5b280e8e9830",
+    "doc_id": "apache/nifi/pr/10627",
+    "title": "NIFI-15327 Enabled TestSiteToSiteMetricsReportingTask on Windows.",
+    "body": "<!-- Licensed to the Apache Software Foundation (ASF) under one or more -->\r\n<!-- contributor license agreements.  See the NOTICE file distributed with -->\r\n<!-- this work for additional information regarding copyright ownership. -->\r\n<!-- The ASF licenses this file to You under the Apache License, Version 2.0 -->\r\n<!-- (the \"License\"); you may not use this file except in compliance with -->\r\n<!-- the License.  You may obtain a copy of the License at -->\r\n<!--     http://www.apache.org/licenses/LICENSE-2.0 -->\r\n<!-- Unless required by applicable law or agreed to in writing, software -->\r\n<!-- distributed under the License is distributed on an \"AS IS\" BASIS, -->\r\n<!-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. -->\r\n<!-- See the License for the specific language governing permissions and -->\r\n<!-- limitations under the License. -->\r\n\r\n# Summary\r\n\r\n[NIFI-15327](https://issues.apache.org/jira/browse/NIFI-15327)\r\nThe reason there was a test failure on Windows was due to line 144 in `MetricsService`\r\nwhere method `fileDescriptorUsage()` of `JvmMetrics` returned NaN. \r\n\r\nApparently it returned NaN because \"File descriptor usage\" is a metric specific to Unix-like operating systems. When trying to translate NaN to JSON, `org.eclipse.parsson.JsonNumberImpl.getJsonNumber` threw an exception since according to the official JSON specification, NaN is not valid numeric values within a strict JSON document.\r\nHence the solution for this was to test for NaN and if present replace the value with -1 (a valid numeric value and a number which indicates more than 0 that there is no possibility of any File descriptors).\r\nIn addition to removing the disabled on Windows annotation in `TestSiteToSiteMetricsReportingTask`, I also followed the Intellij suggestions in order to clean up the code.\r\n\r\n# Tracking\r\n\r\nPlease complete the following tracking steps prior to pull request creation.\r\n\r\n### Issue Tracking\r\n\r\n- [x] [Apache NiFi Jira](https://issues.apache.org/jira/browse/NIFI) issue created\r\n\r\n### Pull Request Tracking\r\n\r\n- [x] Pull Request title starts with Apache NiFi Jira issue number, such as `NIFI-00000`\r\n- [x] Pull Request commit message starts with Apache NiFi Jira issue number, as such `NIFI-00000`\r\n\r\n### Pull Request Formatting\r\n\r\n- [x] Pull Request based on current revision of the `main` branch\r\n- [x] Pull Request refers to a feature branch with one commit containing changes\r\n\r\n# Verification\r\n\r\nPlease indicate the verification steps performed prior to pull request creation.\r\n\r\n### Build\r\n\r\n- [x] Build completed using `./mvnw clean install -P contrib-check`\r\n  - [x] JDK 21\r\n  - [ ] JDK 25\r\n\r\n### Licensing\r\n\r\n- [ ] New dependencies are compatible with the [Apache License 2.0](https://apache.org/licenses/LICENSE-2.0) according to the [License Policy](https://www.apache.org/legal/resolved.html)\r\n- [ ] New dependencies are documented in applicable `LICENSE` and `NOTICE` files\r\n\r\n### Documentation\r\n\r\n- [ ] Documentation formatting appears as expected in rendered files\r\n",
+    "additions": 11,
+    "deletions": 8,
+    "changed_files": 2,
+    "labels": [],
+    "organization": "apache",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "9a03e02a-e046-41c5-b2fb-426b6cbe3826",
+    "doc_id": "microsoft/node-pty/pr/830",
+    "title": "fix: do not delete prebuilds for OS mismatch",
+    "body": "Beta 40 shipped without any prebuilds because it was built on Linux, which does not use them. This PR removes an unnecessary rmSync call so that the next beta release can ship with prebuilt binaries again for third parties.",
+    "additions": 1,
+    "deletions": 2,
+    "changed_files": 1,
+    "labels": [],
+    "organization": "microsoft",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "9ca14499-7d96-4e73-9bcf-5317f0bfc4aa",
+    "doc_id": "aws/s2n-quic/pr/2913",
+    "title": "refactor(s2n-quic-core): use core::net::SocketAddr",
+    "body": "### Description of changes: \r\n\r\nSince Rust 1.77 `std::net::SocketAddr` and related types have been [available](https://doc.rust-lang.org/stable/core/net/index.html) in `core::net`. This means we no longer need to gate some of the conversion methods we had for converting between our own socket address representations and the `net::SocketAddr` types behind and `std` feature flag. \r\n\r\nI've also added a `From` impl for `LocalAddress` and `RemoteAddress`, as that may be useful in #2906\r\n\r\n### Call-outs:\r\n\r\n`std::net::ToSocketAddrs` remains in `std` so we can't remove the entire `std_conversion` mod\r\n\r\n### Testing:\r\n\r\nExisting tests pass and ./scripts/test_no_std script passes\r\n\r\n\r\nBy submitting this pull request, I confirm that my contribution is made under the terms of the Apache 2.0 license.\r\n\r\n",
+    "additions": 180,
+    "deletions": 177,
+    "changed_files": 6,
+    "labels": [],
+    "organization": "aws",
+    "quality_score": 0.7999999999999999
+  },
+  {
+    "id": "15861554-58d2-43ee-b52a-2f6d6db44be0",
+    "doc_id": "aws/amazon-ecs-agent/pr/4823",
+    "title": "Update go version to 1.24.11",
+    "body": "<!--\r\nPlease make sure you've read and understood our contributing guidelines;\r\nhttps://github.com/aws/amazon-ecs-agent/blob/master/CONTRIBUTING.md\r\n\r\nPlease provide the following information:\r\n-->\r\n\r\n### Summary\r\nUpdate Go version for builds to 1.24.11.\r\n\r\n### Testing\r\nBuilt ECS init locally\r\n\r\nNew tests cover the changes: <!-- yes|no -->\r\n\r\n### Description for the changelog\r\nenhancement - Update Go version for builds to 1.24.11\r\n\r\n### Additional Information\r\n\r\n**Does this PR include breaking model changes? If so, Have you added transformation functions?**\r\n<!-- If yes, next release should have a upgraded minor version -->  \r\n\r\n**Does this PR include the addition of new environment variables in the README?**\r\n<!-- \r\nIf it is a sensitive variable, add it to this blocklist in ecs-logs-collector here: https://github.com/aws/amazon-ecs-logs-collector/blob/b0958c2aa424c6dc578d5a8def4422c51791a076/ecs-logs-collector.sh#L63\r\nIf it is not a sensitive variable, add it to the allowlist in ecs-logs-collector here: https://github.com/aws/amazon-ecs-logs-collector/blob/b0958c2aa424c6dc578d5a8def4422c51791a076/ecs-logs-collector.sh#L66\r\n-->\r\n\r\n### Licensing\r\n\r\nBy submitting this pull request, I confirm that my contribution is made under the terms of the Apache 2.0 license.\r\n",
+    "additions": 2,
+    "deletions": 2,
+    "changed_files": 2,
+    "labels": [],
+    "organization": "aws",
+    "quality_score": 0.8999999999999999
+  },
+  {
+    "id": "6784e8cb-cb44-4a95-be8e-600438558746",
+    "doc_id": "apache/spark-kubernetes-operator/pr/427",
+    "title": "[SPARK-54676] Upgrade `Spotless` to 8.1.0",
+    "body": "### What changes were proposed in this pull request?\r\n\r\nThis PR aims to upgrade `Spotless` to 8.1.0.\r\n\r\n### Why are the changes needed?\r\n\r\nTo bring the latest improvements and bug fixes:\r\n- https://github.com/diffplug/spotless/releases/tag/gradle%2F8.1.0\r\n  - https://github.com/diffplug/spotless/pull/2719\r\n  - https://github.com/diffplug/spotless/issues/2679\r\n\r\n### Does this PR introduce _any_ user-facing change?\r\n\r\nNo. This is a test change.\r\n\r\n### How was this patch tested?\r\n\r\nPass the CIs.\r\n\r\n### Was this patch authored or co-authored using generative AI tooling?\r\n\r\nNo.",
+    "additions": 1,
+    "deletions": 1,
+    "changed_files": 1,
+    "labels": [
+      "BUILD"
+    ],
+    "organization": "apache",
+    "quality_score": 0.9999999999999999
+  },
+  {
+    "id": "0a187e35-79b4-498e-82b4-c6b766070fec",
+    "doc_id": "mozilla/multi-account-containers/pr/2835",
+    "title": "icons: Honor context-fill / context-fill-opacity, and dark mode as a fallback in page action icon",
+    "body": "The only reason this icon doesn't look terrible in dark mode is because there's a hack in Firefox that we want to remove, see bug 2001318.\r\n\r\n**Before submitting your pull request**\r\n\r\n- [x] I agree to license my code under the [MPL 2.0 license](https://www.mozilla.org/en-US/MPL/2.0/).\r\n- [x] I rebased my work on top of the main branch.\r\n- [x] I ran `npm test` and all tests passed.\r\n- [x] I added test coverages if relevant.\r\n\r\n# Description\r\n\r\nThe only reason this icon doesn't look terrible in dark mode is because there's a hack in Firefox that we want to remove, see bug 2001318.\r\n\r\nThis shouldn't make the behavior worse with and without the hack, and allows us to remove it.\r\n\r\n## Type of change\r\n\r\n*Select all that apply.*\r\n\r\n- [x] Bug fix\r\n- [ ] New feature\r\n- [ ] Major change (fix or feature that would cause existing functionality to work differently than in the current version)\r\n",
+    "additions": 7,
+    "deletions": 4,
+    "changed_files": 1,
+    "labels": [],
+    "organization": "mozilla",
+    "quality_score": 0.9999999999999999
+  }
+]
