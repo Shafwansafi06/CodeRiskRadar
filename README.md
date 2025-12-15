@@ -47,23 +47,23 @@ Open any PR in Bitbucket and check the "Code Risk Analysis" panel.
 
 ```mermaid
 graph TB
-  PR[PR (Bitbucket)] --> API[Forge API]
-  API --> R[getRiskAnalysis]
-  R --> ML[ML Service v3]
-  ML --> Storage[(Forge Storage)]
-  Storage --> Seed[Seed Data]
-  Storage --> Team[Team PRs]
-  R --> UI[PR Panel]
+  PR["PR (Bitbucket)"] --> API["Forge API"]
+  API --> R["getRiskAnalysis"]
+  R --> ML["ML Service v3"]
+  ML --> Storage[("Forge Storage")]
+  Storage --> Seed["Seed Data"]
+  Storage --> Team["Team PRs"]
+  R --> UI["PR Panel"]
 ```
 
 ### 2) ML pipeline
 
 ```mermaid
 flowchart LR
-  Text[PR title + body] --> TF[TF-IDF (256)]
-  TF --> Sim[Cosine vs Seed & Team]
-  Sim --> Agg[Aggregate & Heuristics]
-  Agg --> Out[Risk + Suggestions]
+  Text["PR title + body"] --> TF["TF-IDF (256)"]
+  TF --> Sim["Cosine vs Seed & Team"]
+  Sim --> Agg["Aggregate & Heuristics"]
+  Agg --> Out["Risk + Suggestions"]
 ```
 
 ### 3) Data flow (sequence)
