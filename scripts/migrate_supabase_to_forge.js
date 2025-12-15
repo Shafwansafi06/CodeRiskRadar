@@ -5,10 +5,20 @@
  * in Forge storage for offline ML analysis.
  * 
  * Run once during setup: node scripts/migrate_supabase_to_forge.js
+ * 
+ * SECURITY: Set environment variables before running:
+ *   export SUPABASE_URL="your_url"
+ *   export SUPABASE_SERVICE_KEY="your_key"
  */
 
-const SUPABASE_URL = 'https://gbesjxveinhjnfnlushe.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdiZXNqeHZlaW5oam5mbmx1c2hlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTUyOTM5MSwiZXhwIjoyMDgxMTA1MzkxfQ.kL81VWhJu9LhaGZoLuMxqLb6hNcilwo5ruQ64Fdzs8Y';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL_HERE';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || 'YOUR_SERVICE_KEY_HERE';
+
+if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE' || SUPABASE_KEY === 'YOUR_SERVICE_KEY_HERE') {
+  console.error('❌ ERROR: Set SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables!');
+  console.error('Usage: SUPABASE_URL=xxx SUPABASE_SERVICE_KEY=yyy node scripts/migrate_supabase_to_forge.js');
+  process.exit(1);
+}
 
 async function fetchFromSupabase(endpoint) {
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {

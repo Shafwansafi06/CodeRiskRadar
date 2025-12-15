@@ -26,86 +26,13 @@ import { storage } from '@forge/api';
 // ============================================================================
 
 /**
- * Initialize seed data from embedded JSON (runs once automatically)
- */
-async function initializeSeedData() {
-  try {
-    // Check if already initialized
-    const metadata = await storage.get('seed_metadata');
-    if (metadata) {
-      console.log('✅ Seed data already initialized');
-      return true;
-    }
-    
-    console.log('🌱 First run - initializing seed data...');
-    
-    // Import seed data from JSON files
-    const fs = await import('fs');
-    const path = await import('path');
-    const { fileURLToPath } = await import('url');
-    
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const seedDataPath = path.join(__dirname, '../../seed-data');
-    
-    // Load metadata
-    const metadataContent = fs.readFileSync(path.join(seedDataPath, 'metadata.json'), 'utf-8');
-    const seedMetadata = JSON.parse(metadataContent);
-    await storage.set('seed_metadata', seedMetadata);
-    console.log(`✅ Loaded metadata: ${seedMetadata.organizations.length} orgs`);
-    
-    // Load quality PRs (chunked)
-    const qualityFiles = fs.readdirSync(seedDataPath)
-      .filter(f => f.startsWith('quality_prs_'))
-      .sort();
-    
-    let totalQuality = 0;
-    for (let i = 0; i < qualityFiles.length; i++) {
-      const filePath = path.join(seedDataPath, qualityFiles[i]);
-      const qualityPRs = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-      await storage.set(`seed_quality_prs_${i + 1}`, qualityPRs);
-      totalQuality += qualityPRs.length;
-    }
-    await storage.set('seed_quality_prs_count', qualityFiles.length);
-    console.log(`✅ Loaded ${totalQuality} quality PRs in ${qualityFiles.length} chunks`);
-    
-    // Load risky PRs
-    const riskyContent = fs.readFileSync(path.join(seedDataPath, 'risky_prs.json'), 'utf-8');
-    const riskyPRs = JSON.parse(riskyContent);
-    await storage.set('seed_risky_prs', riskyPRs);
-    console.log(`✅ Loaded ${riskyPRs.length} risky PRs`);
-    
-    // Load embeddings
-    const embeddingsContent = fs.readFileSync(path.join(seedDataPath, 'embeddings.json'), 'utf-8');
-    const embeddings = JSON.parse(embeddingsContent);
-    await storage.set('seed_embeddings', embeddings);
-    console.log(`✅ Loaded ${embeddings.length} embeddings`);
-    
-    // Initialize team learning
-    await storage.set('team_prs', []);
-    await storage.set('team_pr_outcomes', {});
-    console.log('✅ Initialized team learning storage');
-    
-    console.log('🎉 Seed data initialization complete!');
-    return true;
-    
-  } catch (error) {
-    console.error('❌ Failed to initialize seed data:', error);
-    return false;
-  }
-}
-
-/**
- * Load all seed quality PRs (from migrated Supabase data)
+ * Load all seed quality PRs (from Forge storage - loaded via loadSeedData bridge)
  */
 async function loadSeedQualityPRs() {
   try {
-    // Auto-initialize on first run
-    await initializeSeedData();
-    
     const chunkCount = await storage.get('seed_quality_prs_count') || 0;
     if (chunkCount === 0) {
-      console.log('⚠️  No seed data found even after initialization');
+      console.log('⚠️  No seed data in storage. Use baseline analysis.');
       return [];
     }
     
@@ -400,8 +327,7 @@ export async function calculateMLRiskScore(prData) {
         quality_score: pr.quality_score
       })),
       ml_model: 'tfidf_cosine_hybrid_v3',
-      data_source: 'seed_data_plus_team_learning',
-      seed_prs_analyzed: seedQualityPRs.length + seedRiskyPRs.length,
+      data_source: 'team_learning_plus_baseline',
       team_prs_analyzed: (await getTeamPRs()).length
     };
     
@@ -445,70 +371,200 @@ function calculateBaselineRisk(prData) {
  */
 export async function getPRImprovementSuggestions(prData) {
   try {
-    const { title, body, additions, deletions, changed_files } = prData;
+    const { title, body, additions, deletions, changed_files, filesChanged } = prData;
     const totalChanges = (additions || 0) + (deletions || 0);
     
     const suggestions = [];
     const seedStats = await getSeedStats();
     
-    // Title quality
+    // Find similar quality PRs first for contextual examples
+    const prText = `${title || ''} ${body || ''}`;
+    const similar = await findSimilarPRs(prText, 10);
+    const qualityExamples = similar.filter(pr => pr.source === 'seed_quality').slice(0, 3);
+    const riskyExamples = similar.filter(pr => pr.source === 'seed_risky').slice(0, 2);
+    
+    // 1. Title Quality - Be specific about improvements
     if (!title || title.length < 20) {
+      const goodTitleExample = qualityExamples.find(pr => pr.title && pr.title.length > 30);
       suggestions.push({
-        category: 'Title',
+        category: '📝 Title Quality',
         severity: 'high',
-        current: `Short title (${title?.length || 0} chars)`,
-        suggestion: `Industry standard: ${seedStats.avg_title_length}+ chars. Be descriptive about what changed and why.`,
-        reference: 'seed_data_analysis'
+        icon: '🔴',
+        current: `Title too short: "${title || 'No title'}" (${title?.length || 0} chars)`,
+        suggestion: goodTitleExample 
+          ? `Make it descriptive like "${goodTitleExample.title}" (${goodTitleExample.title.length} chars). Include: what changed, why, and the impact.`
+          : `Expand to ${seedStats.avg_title_length}+ chars. Include: [Type] Component: What changed and why. Example: "feat(api): Add rate limiting to prevent abuse"`,
+        action: '✏️ Rewrite title to be more descriptive',
+        example: goodTitleExample?.title || 'fix(auth): Resolve token expiration bug affecting mobile users',
+        reference: goodTitleExample?.organization || 'industry_standard'
       });
-    }
-    
-    // PR size
-    if (totalChanges > seedStats.avg_additions * 2) {
+    } else if (title.length < 35) {
       suggestions.push({
-        category: 'Size',
+        category: '📝 Title Quality',
         severity: 'medium',
-        current: `Large PR: ${totalChanges} lines`,
-        suggestion: `Industry average: ${seedStats.avg_additions} lines. Consider splitting into smaller, focused PRs.`,
-        reference: 'seed_data_benchmarks'
+        icon: '🟡',
+        current: `Title could be more descriptive (${title.length} chars)`,
+        suggestion: `Add more context about the "why" behind this change. Top companies average ${seedStats.avg_title_length} chars.`,
+        action: '✏️ Add more context to title',
+        example: 'refactor(database): Optimize query performance for user dashboards (15% faster)',
+        reference: 'best_practice'
       });
     }
     
-    // Description
+    // 2. Description Quality - Provide template
     if (!body || body.length < 50) {
+      const goodDescExample = qualityExamples.find(pr => pr.body && pr.body.length > 100);
+      const descTemplate = `## What & Why
+  [Explain the problem and solution]
+  
+## Changes Made
+  - [Key change 1]
+  - [Key change 2]
+  
+## Testing
+  - [How you tested this]
+  - [Test coverage: X%]
+  
+## Screenshots/Logs
+  [If UI/output changed]`;
+      
       suggestions.push({
-        category: 'Description',
+        category: '📋 Description',
         severity: 'high',
-        current: `Missing/short description (${body?.length || 0} chars)`,
-        suggestion: 'Quality PRs from top companies include: Why? What? How was it tested? Consider adding these sections.',
-        reference: 'seed_data_patterns'
+        icon: '🔴',
+        current: `Missing PR description (${body?.length || 0} chars)`,
+        suggestion: goodDescExample
+          ? `Add a detailed description like ${goodDescExample.organization} does (${goodDescExample.body.length} chars). Include: context, changes, testing.`
+          : `Quality PRs include: Why? What changed? How was it tested? Use this template:\n\n${descTemplate}`,
+        action: '📝 Add structured description using template',
+        example: descTemplate,
+        reference: goodDescExample?.organization || 'apache_standard'
+      });
+    } else if (body.length < 150) {
+      suggestions.push({
+        category: '📋 Description',
+        severity: 'medium',
+        icon: '🟡',
+        current: `Description too brief (${body.length} chars)`,
+        suggestion: 'Add more detail: Why was this needed? What alternatives were considered? How was it tested?',
+        action: '📝 Expand description with context and testing details',
+        example: 'See Apache PRs which average 300+ chars with clear problem/solution/testing sections',
+        reference: 'quality_pattern'
       });
     }
     
-    // File count
+    // 3. PR Size - Specific splitting recommendations
+    if (totalChanges > seedStats.avg_additions * 3) {
+      const fileTypes = new Set();
+      if (filesChanged && Array.isArray(filesChanged)) {
+        filesChanged.forEach(f => {
+          if (f.path) {
+            if (f.path.includes('test') || f.path.includes('spec')) fileTypes.add('tests');
+            else if (f.path.includes('doc') || f.path.includes('.md')) fileTypes.add('docs');
+            else if (f.path.includes('config') || f.path.includes('.json')) fileTypes.add('config');
+            else fileTypes.add('code');
+          }
+        });
+      }
+      
+      const splitSuggestion = fileTypes.size > 1 
+        ? `Split into ${fileTypes.size} PRs: ${Array.from(fileTypes).join(', ')}`
+        : 'Break into smaller, atomic changes (one concern per PR)';
+      
+      suggestions.push({
+        category: '📏 PR Size',
+        severity: 'high',
+        icon: '🔴',
+        current: `Very large PR: ${totalChanges} lines changed (${Math.round(totalChanges / seedStats.avg_additions)}x industry average)`,
+        suggestion: `${splitSuggestion}. Large PRs have ${(riskyExamples.length / similar.length * 100).toFixed(0)}% higher risk of bugs.`,
+        action: '✂️ Split into smaller, focused PRs',
+        example: `Google/Facebook limit PRs to ~300 lines. Current: ${totalChanges} lines`,
+        reference: 'industry_benchmark'
+      });
+    } else if (totalChanges > seedStats.avg_additions * 1.5) {
+      suggestions.push({
+        category: '📏 PR Size',
+        severity: 'medium',
+        icon: '🟡',
+        current: `Large PR: ${totalChanges} lines (industry avg: ${seedStats.avg_additions})`,
+        suggestion: 'Consider splitting if changes address multiple concerns. Smaller PRs = faster reviews.',
+        action: '✂️ Consider splitting into logical chunks',
+        example: '150-200 lines per PR is optimal for review quality',
+        reference: 'best_practice'
+      });
+    }
+    
+    // 4. File Count - Identify unrelated changes
     if ((changed_files || 0) > seedStats.avg_files * 2) {
       suggestions.push({
-        category: 'Scope',
+        category: '🗂️ Scope',
         severity: 'medium',
-        current: `${changed_files} files changed`,
-        suggestion: `Industry average: ${seedStats.avg_files} files. Too many files may indicate multiple unrelated changes.`,
-        reference: 'seed_data_benchmarks'
+        icon: '🟡',
+        current: `${changed_files} files changed (avg: ${seedStats.avg_files} files)`,
+        suggestion: 'Many files may indicate unrelated changes bundled together. Check if this should be multiple PRs.',
+        action: '🔍 Review if all changes belong together',
+        example: 'Single responsibility: Each PR should solve ONE problem',
+        reference: 'solid_principles'
       });
     }
     
-    // Find similar quality PRs for examples
-    const prText = `${title || ''} ${body || ''}`;
-    const similar = await findSimilarPRs(prText, 5);
-    const qualityExample = similar.find(pr => pr.source === 'seed_quality');
-    
-    if (qualityExample) {
+    // 5. Risk Patterns - From similar risky PRs
+    if (riskyExamples.length > 0) {
+      const commonIssue = riskyExamples[0];
       suggestions.push({
-        category: 'Best Practice',
-        severity: 'info',
-        current: 'Learning from similar PRs',
-        suggestion: `Similar quality PR from ${qualityExample.organization}: "${qualityExample.title}" had ${qualityExample.additions} additions, ${qualityExample.changed_files} files. Follow similar patterns.`,
-        reference: qualityExample.doc_id || 'seed_data'
+        category: '⚠️ Risk Pattern',
+        severity: 'high',
+        icon: '🔴',
+        current: `Similar to ${riskyExamples.length} risky PRs in our database`,
+        suggestion: `PR similar to ${commonIssue.organization}'s problematic PR: "${commonIssue.title}". That PR had: ${commonIssue.additions} additions, ${commonIssue.changed_files} files. Review for similar issues.`,
+        action: '🔍 Review for common anti-patterns',
+        example: `Common issues: Insufficient testing, mixing refactor + features, unclear commit history`,
+        reference: commonIssue.doc_id || 'risk_database'
       });
     }
+    
+    // 6. Best Practice Example - From similar quality PRs
+    if (qualityExamples.length > 0) {
+      const bestExample = qualityExamples[0];
+      suggestions.push({
+        category: '✨ Best Practice',
+        severity: 'info',
+        icon: '💡',
+        current: `${Math.round(bestExample.similarity * 100)}% similar to quality PR from ${bestExample.organization}`,
+        suggestion: `Great! Your PR resembles "${bestExample.title}" (${bestExample.additions} adds, ${bestExample.changed_files} files). Follow their pattern: ${bestExample.body?.substring(0, 100)}...`,
+        action: '📖 Study similar quality PR for inspiration',
+        example: `${bestExample.organization} PRs average: ${bestExample.additions || 150} lines, ${bestExample.changed_files || 5} files, ${bestExample.title?.length || 40} char titles`,
+        reference: `${bestExample.organization}/${bestExample.doc_id || 'quality_pr'}`
+      });
+    }
+    
+    // 7. Testing Reminder
+    const hasTestKeywords = body && (
+      body.toLowerCase().includes('test') || 
+      body.toLowerCase().includes('coverage') ||
+      body.toLowerCase().includes('unit') ||
+      body.toLowerCase().includes('integration')
+    );
+    
+    if (!hasTestKeywords && totalChanges > 50) {
+      suggestions.push({
+        category: '🧪 Testing',
+        severity: 'high',
+        icon: '🔴',
+        current: 'No mention of testing in description',
+        suggestion: 'Add testing details: What tests were added/updated? What\'s the coverage? Manual testing steps?',
+        action: '🧪 Add testing section to description',
+        example: `## Testing
+- Added 12 unit tests (coverage: 87%)
+- Manual testing: Verified in dev/staging
+- Edge cases: Tested with empty inputs, large datasets`,
+        reference: 'testing_best_practice'
+      });
+    }
+    
+    // Sort by severity
+    const severityOrder = { high: 0, medium: 1, low: 2, info: 3 };
+    suggestions.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
     
     return suggestions;
     

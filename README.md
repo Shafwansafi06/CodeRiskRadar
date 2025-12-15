@@ -1,564 +1,1125 @@
-# 🎯 PitStop AI - Intelligent PR Risk Analysis for Bitbucket# Code Risk Radar
+# 🎯 PitStop AI - Intelligent PR Risk Analysis for Bitbucket# 🎯 PitStop AI - Intelligent PR Risk Analysis for Bitbucket# Code Risk Radar
 
 
 
-<div align="center">**Proactive security and quality assistant for Bitbucket and Jira, powered by Atlassian Forge and Rovo.**
+<div align="center">
 
 
 
-![Version](https://img.shields.io/badge/version-6.15.0-blue.svg)## 🎯 Overview
+![Version](https://img.shields.io/badge/version-6.15.0-blue.svg)<div align="center">**Proactive security and quality assistant for Bitbucket and Jira, powered by Atlassian Forge and Rovo.**
 
 ![Atlassian Forge](https://img.shields.io/badge/Atlassian-Forge-0052CC?logo=atlassian)
 
-![Runs on Atlassian](https://img.shields.io/badge/Runs%20on-Atlassian-green)Code Risk Radar is an AI-powered code analysis tool that integrates deeply with your Atlassian workflow. It automatically scans pull requests for security vulnerabilities, anti-patterns, and quality issues, then creates actionable Jira tickets with suggested fixes—all without leaving the Atlassian ecosystem.
+![Runs on Atlassian](https://img.shields.io/badge/Runs%20on-Atlassian-green)
 
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-### Key Features
+![Version](https://img.shields.io/badge/version-6.15.0-blue.svg)## 🎯 Overview
 
 **AI-powered Pull Request analysis that learns from 623+ quality PRs from top companies (Apache, Google, Microsoft) AND your team's unique patterns.**
 
+![Atlassian Forge](https://img.shields.io/badge/Atlassian-Forge-0052CC?logo=atlassian)
+
+[Features](#-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [Documentation](#-documentation)
+
+![Runs on Atlassian](https://img.shields.io/badge/Runs%20on-Atlassian-green)Code Risk Radar is an AI-powered code analysis tool that integrates deeply with your Atlassian workflow. It automatically scans pull requests for security vulnerabilities, anti-patterns, and quality issues, then creates actionable Jira tickets with suggested fixes—all without leaving the Atlassian ecosystem.
+
+</div>
+
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
+---
+
+### Key Features
+
+## 🌟 Features
+
+**AI-powered Pull Request analysis that learns from 623+ quality PRs from top companies (Apache, Google, Microsoft) AND your team's unique patterns.**
+
+### 🧠 Hybrid ML Engine
+
 - 🔍 **Automated Risk Detection**: Scans every PR for SQL injection, hardcoded secrets, and 20+ risk patterns
-
-[Features](#-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [Documentation](#-documentation)- 🤖 **ML-Powered Risk Scoring**: 82% accuracy with explainable predictions (39 features across 6 axes)
-
-- 🧠 **Vector Search**: Find similar past incidents and PRs using embeddings (Supabase pgvector)
-
-</div>- 🤖 **Rovo AI Integration**: Conversational agent answers questions like "What's risky in PR-123?"
-
-- 🎫 **Smart Jira Integration**: Auto-creates tickets for critical risks with context-aware prioritization
-
----- ✅ **Safety-First Design**: All write operations require explicit user approval with dry-run previews
-
-- 📊 **Context-Aware Scoring**: Uses historical data to rank risks by business impact
-
-## 🌟 Features- 🔄 **Bitidirectional Sync**: Tracks remediation status across Bitbucket and Jira
-
-
-
-### 🧠 Hybrid ML Engine## 🚀 Quick Start
 
 - **Day 1 Intelligence**: Works immediately for new teams using 623 curated PRs from industry leaders
 
-- **Team Learning**: Continuously learns from your team's PR patterns and coding style### Prerequisites
+- **Team Learning**: Continuously learns from your team's PR patterns and coding style[Features](#-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [Documentation](#-documentation)- 🤖 **ML-Powered Risk Scoring**: 82% accuracy with explainable predictions (39 features across 6 axes)
 
 - **Zero Configuration**: Auto-initializes seed data on first use
 
-- **No External APIs**: All ML processing happens in Forge storage (Runs on Atlassian eligible)- Atlassian Forge CLI: `npm install -g @forge/cli`
+- **No External APIs**: All ML processing happens in Forge storage (Runs on Atlassian eligible)- 🧠 **Vector Search**: Find similar past incidents and PRs using embeddings (Supabase pgvector)
+
+
+
+### 📊 Smart Risk Analysis</div>- 🤖 **Rovo AI Integration**: Conversational agent answers questions like "What's risky in PR-123?"
+
+
+
+- **TF-IDF + Cosine Similarity**: Find similar PRs from 623+ quality examples- 🎫 **Smart Jira Integration**: Auto-creates tickets for critical risks with context-aware prioritization
+
+- **Industry Benchmarks**: Compare against Apache, Google, Microsoft standards
+
+- **Explainable AI**: See exactly why each risk score was calculated---- ✅ **Safety-First Design**: All write operations require explicit user approval with dry-run previews
+
+- **Real-time Predictions**: Instant analysis on PR creation/update
+
+- 📊 **Context-Aware Scoring**: Uses historical data to rank risks by business impact
+
+### 🎯 Actionable Insights
+
+## 🌟 Features- 🔄 **Bitidirectional Sync**: Tracks remediation status across Bitbucket and Jira
+
+- **Specific Suggestions**: Get concrete examples from similar PRs
+
+- **Best Practice Patterns**: Learn from top companies' successful PRs
+
+- **Team-Specific Advice**: Recommendations tailored to your coding style
+
+- **Priority-Ranked Issues**: Focus on what matters most### 🧠 Hybrid ML Engine## 🚀 Quick Start
+
+
+
+---- **Day 1 Intelligence**: Works immediately for new teams using 623 curated PRs from industry leaders
+
+
+
+## 🚀 Quick Start- **Team Learning**: Continuously learns from your team's PR patterns and coding style### Prerequisites
+
+
+
+### Prerequisites- **Zero Configuration**: Auto-initializes seed data on first use
+
+
+
+- Atlassian Forge CLI: `npm install -g @forge/cli`- **No External APIs**: All ML processing happens in Forge storage (Runs on Atlassian eligible)- Atlassian Forge CLI: `npm install -g @forge/cli`
 
 - Bitbucket Cloud workspace with admin access
 
-### 📊 Real-time Risk Analysis- Jira Cloud project
+- Node.js 20.x or higher- Bitbucket Cloud workspace with admin access
 
-- **Smart Risk Scoring**: TF-IDF + Cosine similarity analysis against industry benchmarks- OpenAI API key (or Anthropic Claude)
 
-- **Visual Risk Breakdown**: Interactive charts showing size, complexity, and documentation quality- (Optional) Supabase account for vector search
+
+### Installation### 📊 Real-time Risk Analysis- Jira Cloud project
+
+
+
+```bash- **Smart Risk Scoring**: TF-IDF + Cosine similarity analysis against industry benchmarks- OpenAI API key (or Anthropic Claude)
+
+# Clone the repository
+
+git clone https://github.com/Shafwansafi06/CodeRiskRadar.git- **Visual Risk Breakdown**: Interactive charts showing size, complexity, and documentation quality- (Optional) Supabase account for vector search
+
+cd CodeRiskRadar
 
 - **Similar PR Detection**: Find historically similar PRs with outcomes and lessons learned
 
-- **Actionable Insights**: Get specific suggestions based on patterns from successful PRs### Installation
+# Install dependencies
+
+npm install- **Actionable Insights**: Get specific suggestions based on patterns from successful PRs### Installation
+
+cd frontend && npm install && cd ..
 
 
 
-### 🤖 Rovo AI Agents1. **Clone and install dependencies:**
+# Login to Forge
 
-- **PR Quality Agent**: Analyzes your PR and suggests improvements based on best practices   ```bash
+forge login### 🤖 Rovo AI Agents1. **Clone and install dependencies:**
 
-- **Risk Agent**: Deep-dive risk assessment with detailed explanations   cd CodeRiskRadar
 
-- **Historical Insights**: Learn from past PRs with similar characteristics   npm install
 
-   ```
+# Deploy the app- **PR Quality Agent**: Analyzes your PR and suggests improvements based on best practices   ```bash
 
-### 🎨 Beautiful UI
+npm run build
 
-- **Dark/Light Theme**: Seamless theme switching with system preference detection2. **Set environment variables:**
+forge deploy- **Risk Agent**: Deep-dive risk assessment with detailed explanations   cd CodeRiskRadar
 
-- **Interactive Graphs**: Radar charts and risk visualizations using Recharts   ```bash
 
-- **CSP Compliant**: External CSS extraction for Atlassian security policies   forge variables set OPENAI_API_KEY "your-api-key"
 
-- **Responsive Design**: Works perfectly on all screen sizes   forge variables set JIRA_PROJECT_KEY "RISK"
+# Install to your workspace- **Historical Insights**: Learn from past PRs with similar characteristics   npm install
 
-   forge variables set SUPABASE_URL "your-supabase-url"  # Optional
+forge install
 
----   forge variables set SUPABASE_KEY "your-supabase-key"  # Optional
+```   ```
 
-   ```
 
-## 🚀 Quick Start
 
-3. **Deploy to Forge:**
+### First Time Setup### 🎨 Beautiful UI
 
-### Prerequisites   ```bash
 
-   forge deploy
 
-- Node.js 20.x or higher   forge install --site your-site.atlassian.net
+The app automatically initializes with 623 quality PRs from top companies on first use. No manual setup required!- **Dark/Light Theme**: Seamless theme switching with system preference detection2. **Set environment variables:**
 
-- Atlassian Forge CLI: `npm install -g @forge/cli`   ```
 
-- Bitbucket Cloud workspace with admin access
 
-4. **Configure webhooks:**
+---- **Interactive Graphs**: Radar charts and risk visualizations using Recharts   ```bash
 
-### Installation   - Go to your Bitbucket repository settings
 
-   - Navigate to Webhooks
 
-1. **Clone and Install**   - The app will automatically register webhooks on first install
+## 🏗️ Architecture- **CSP Compliant**: External CSS extraction for Atlassian security policies   forge variables set OPENAI_API_KEY "your-api-key"
 
-   ```bash
 
-   git clone https://github.com/Shafwansafi06/CodeRiskRadar.git5. **Test the installation:**
 
-   cd CodeRiskRadar   - Create a test PR with intentional risks (e.g., `password = "test123"`)
+### System Overview- **Responsive Design**: Works perfectly on all screen sizes   forge variables set JIRA_PROJECT_KEY "RISK"
 
-   npm install   - Check the Risk Analysis panel in the PR view
 
-   cd frontend && npm install && cd ..   - Verify Rovo agent responds to queries in Slack/Teams
 
-   ```
+```mermaid   forge variables set SUPABASE_URL "your-supabase-url"  # Optional
 
-## 📁 Project Structure
+graph TB
 
-2. **Login to Forge**
+    subgraph "Bitbucket Cloud"---   forge variables set SUPABASE_KEY "your-supabase-key"  # Optional
 
-   ```bash```
+        PR[Pull Request]
 
-   forge loginCodeRiskRadar/
+        UI[UI Panel]   ```
 
-   ```├── manifest.yml              # Forge app configuration
+    end
 
-├── package.json              # Dependencies
+    ## 🚀 Quick Start
 
-3. **Build Frontend**├── src/
+    subgraph "Forge Runtime"
 
-   ```bash│   ├── index.js              # Main webhook handlers
+        Bridge[Bridge Resolver]3. **Deploy to Forge:**
 
-   cd frontend│   ├── riskAnalyzer.js       # Core risk detection logic
+        ML[ML Service v3]
 
-   npm run build│   ├── jiraIntegration.js    # Jira API operations
+        Storage[Forge Storage]### Prerequisites   ```bash
 
-   cd ..│   ├── storage.js            # Forge Entities wrapper
+    end
 
-   ```│   ├── dryRunService.js      # Preview generation for safety
+       forge deploy
 
-│   ├── rovoAgent.js          # Conversational AI agent
+    subgraph "Data Sources"
 
-4. **Deploy to Bitbucket**│   ├── rovoActions.js        # Rovo actions (Explain, Fix, Approve)
+        Seed[Seed Data<br/>623 Quality PRs]- Node.js 20.x or higher   forge install --site your-site.atlassian.net
 
-   ```bash│   └── vectorSearch.js       # Supabase pgvector integration
+        Team[Team PRs<br/>Max 500]
 
-   forge deploy├── static/
+    end- Atlassian Forge CLI: `npm install -g @forge/cli`   ```
 
-   forge install --site <your-bitbucket-workspace>│   └── riskPanel/
+    
 
-   ```│       ├── index.html        # PR panel UI
+    PR -->|Trigger| Bridge- Bitbucket Cloud workspace with admin access
 
-│       ├── styles.css        # Styling
+    Bridge -->|Extract Context| PR
 
-5. **Done!** 🎉│       └── script.js         # Frontend logic
+    Bridge -->|Analyze| ML4. **Configure webhooks:**
 
-   - Open any Pull Request in your Bitbucket repository├── tests/
+    ML -->|Query| Seed
 
-   - Look for the "Code Risk Analysis" panel│   ├── riskAnalyzer.test.js
+    ML -->|Query| Team### Installation   - Go to your Bitbucket repository settings
 
-   - The app will automatically initialize with 623 seed PRs on first use│   └── jiraIntegration.test.js
+    ML -->|Store| Storage
 
-├── README.md
+    Bridge -->|Return| UI   - Navigate to Webhooks
 
----└── SECURITY.md
+    
+
+    style PR fill:#0052CC1. **Clone and Install**   - The app will automatically register webhooks on first install
+
+    style ML fill:#36B37E
+
+    style Storage fill:#FF5630   ```bash
+
+    style Seed fill:#6554C0
+
+    style Team fill:#FFAB00   git clone https://github.com/Shafwansafi06/CodeRiskRadar.git5. **Test the installation:**
 
 ```
 
-## 🏗️ Architecture
+   cd CodeRiskRadar   - Create a test PR with intentional risks (e.g., `password = "test123"`)
 
-## 🔧 Configuration
+### ML Pipeline
+
+   npm install   - Check the Risk Analysis panel in the PR view
+
+```mermaid
+
+flowchart LR   cd frontend && npm install && cd ..   - Verify Rovo agent responds to queries in Slack/Teams
+
+    Input[PR Data] --> Extract[Extract Features]
+
+    Extract --> Vector[TF-IDF Vector<br/>256-dim]   ```
+
+    
+
+    Vector --> Compare[Cosine Similarity]## 📁 Project Structure
+
+    
+
+    subgraph "Data Sources"2. **Login to Forge**
+
+        Quality[Quality PRs<br/>623 examples]
+
+        Risky[Risky PRs<br/>64 anti-patterns]   ```bash```
+
+        TeamData[Team PRs<br/>Your history]
+
+    end   forge loginCodeRiskRadar/
+
+    
+
+    Quality --> Compare   ```├── manifest.yml              # Forge app configuration
+
+    Risky --> Compare
+
+    TeamData --> Compare├── package.json              # Dependencies
+
+    
+
+    Compare --> Analyze[Statistical Analysis]3. **Build Frontend**├── src/
+
+    Analyze --> Benchmark[Industry Benchmarks]
+
+    Benchmark --> Score[Risk Score 0-100%]   ```bash│   ├── index.js              # Main webhook handlers
+
+    
+
+    Score --> Suggest[AI Suggestions]   cd frontend│   ├── riskAnalyzer.js       # Core risk detection logic
+
+    Suggest --> Output[Final Report]
+
+       npm run build│   ├── jiraIntegration.js    # Jira API operations
+
+    style Input fill:#0052CC
+
+    style Vector fill:#36B37E   cd ..│   ├── storage.js            # Forge Entities wrapper
+
+    style Score fill:#FF5630
+
+    style Output fill:#6554C0   ```│   ├── dryRunService.js      # Preview generation for safety
+
+```
+
+│   ├── rovoAgent.js          # Conversational AI agent
+
+### Data Flow
+
+4. **Deploy to Bitbucket**│   ├── rovoActions.js        # Rovo actions (Explain, Fix, Approve)
+
+```mermaid
+
+sequenceDiagram   ```bash│   └── vectorSearch.js       # Supabase pgvector integration
+
+    participant User
+
+    participant Bitbucket   forge deploy├── static/
+
+    participant Bridge
+
+    participant ML   forge install --site <your-bitbucket-workspace>│   └── riskPanel/
+
+    participant Storage
+
+       ```│       ├── index.html        # PR panel UI
+
+    User->>Bitbucket: Create/Update PR
+
+    Bitbucket->>Bridge: Trigger Event│       ├── styles.css        # Styling
+
+    Bridge->>Bitbucket: Fetch PR Details
+
+    Bridge->>Bitbucket: Fetch Diffstat5. **Done!** 🎉│       └── script.js         # Frontend logic
+
+    Bridge->>ML: Calculate Risk Score
+
+       - Open any Pull Request in your Bitbucket repository├── tests/
+
+    ML->>Storage: Load Seed Data (623 PRs)
+
+    Storage-->>ML: Quality PRs   - Look for the "Code Risk Analysis" panel│   ├── riskAnalyzer.test.js
+
+    
+
+    ML->>Storage: Load Team Data   - The app will automatically initialize with 623 seed PRs on first use│   └── jiraIntegration.test.js
+
+    Storage-->>ML: Team PRs
+
+    ├── README.md
+
+    ML->>ML: Generate TF-IDF Vectors
+
+    ML->>ML: Calculate Similarities---└── SECURITY.md
+
+    ML->>ML: Compare to Benchmarks
+
+    ```
+
+    ML-->>Bridge: Risk Score + Suggestions
+
+    Bridge->>Storage: Store Team PR## 🏗️ Architecture
+
+    Bridge-->>Bitbucket: Render UI Panel
+
+    Bitbucket-->>User: Display Results## 🔧 Configuration
+
+```
 
 ### System Overview
+
+### Storage Architecture
 
 ### Custom Risk Patterns
 
 ```mermaid
 
-graph TBEdit `src/riskAnalyzer.js` to add custom regex patterns:
+graph TD```mermaid
 
-    subgraph "Bitbucket Cloud"
+    subgraph "Forge Storage Max 250KB per key"
 
-        PR[Pull Request]```javascript
+        Meta[seed_metadata<br/>Stats & Orgs]graph TBEdit `src/riskAnalyzer.js` to add custom regex patterns:
 
-        UI[PR Panel UI]{
+        Q1[seed_quality_prs_1<br/>200 PRs]
 
-    end  id: 'custom-pattern',
+        Q2[seed_quality_prs_2<br/>200 PRs]    subgraph "Bitbucket Cloud"
 
-      name: 'Your Risk Name',
+        Q3[seed_quality_prs_3<br/>200 PRs]
 
-    subgraph "Forge Runtime"  pattern: /your-regex-here/gi,
+        Q4[seed_quality_prs_4<br/>23 PRs]        PR[Pull Request]```javascript
 
-        API[Forge API]  severity: 'HIGH',
+        Risky[seed_risky_prs<br/>64 PRs]
 
-        Resolver[Risk Analysis Resolver]  category: 'SECURITY',
+        Embed[seed_embeddings<br/>100 vectors]        UI[PR Panel UI]{
 
-        ML[ML Service v3]  description: 'Description of the risk'
+        TeamPRs[team_prs<br/>Max 500]
 
-        Storage[(Forge Storage)]}
-
-        Rovo[Rovo Agents]```
+        Outcomes[team_pr_outcomes<br/>Success/Failure]    end  id: 'custom-pattern',
 
     end
 
-    ### Team-Specific Settings
+          name: 'Your Risk Name',
 
-    subgraph "Data Sources"
+    App[ML Service] -->|Read| Meta
 
-        Seed[Seed Data<br/>623 Quality PRs<br/>64 Risky PRs]Store configuration via Forge storage:
+    App -->|Read| Q1    subgraph "Forge Runtime"  pattern: /your-regex-here/gi,
 
-        Team[Team PRs<br/>Learning Over Time]
+    App -->|Read| Q2
 
-    end```javascript
+    App -->|Read| Q3        API[Forge API]  severity: 'HIGH',
 
-    await storeProjectConfig('YOUR-PROJECT', {
+    App -->|Read| Q4
 
-    PR -->|Event| API  autoCreateJiraIssues: true,
+    App -->|Read| Risky        Resolver[Risk Analysis Resolver]  category: 'SECURITY',
 
-    API --> Resolver  severityThreshold: 'HIGH',
+    App -->|Read| Embed
 
-    Resolver --> ML  customRules: [...]
+    App -->|Read/Write| TeamPRs        ML[ML Service v3]  description: 'Description of the risk'
 
-    ML --> Storage});
+    App -->|Read/Write| Outcomes
 
-    Storage --> Seed```
+            Storage[(Forge Storage)]}
 
-    Storage --> Team
+    style Meta fill:#0052CC
 
-    ML -->|Risk Score| Resolver## 📈 Machine Learning Setup (Optional)
+    style Q1 fill:#36B37E        Rovo[Rovo Agents]```
 
-    Resolver -->|Response| UI
+    style Q2 fill:#36B37E
 
-    UI -->|User Action| RovoCode Risk Radar includes a production-ready ML pipeline for risk prediction. For MVP, the app uses regex-based detection. For advanced deployments:
+    style Q3 fill:#36B37E    end
 
-    Rovo --> ML
+    style Q4 fill:#36B37E
 
-    ### Train Custom Model
+    style Risky fill:#FF5630    ### Team-Specific Settings
 
-    style PR fill:#0052CC
+    style TeamPRs fill:#FFAB00
 
-    style ML fill:#FF5630See **[ml/README.md](ml/README.md)** for complete ML pipeline documentation.
+```    subgraph "Data Sources"
 
-    style Storage fill:#36B37E
 
-    style Seed fill:#6554C0```bash
 
-    style Team fill:#00B8D9# Generate synthetic training data
+---        Seed[Seed Data<br/>623 Quality PRs<br/>64 Risky PRs]Store configuration via Forge storage:
 
-```cd ml
 
-python generate_synthetic_data.py
 
-### ML Pipeline
+## 📖 Documentation        Team[Team PRs<br/>Learning Over Time]
 
-# Install ML dependencies
 
-```mermaidpip install pandas numpy scikit-learn joblib shap matplotlib
 
-flowchart LR
+### Project Structure    end```javascript
 
-    subgraph Input# Train model (Jupyter notebook)
 
-        A[PR Data]jupyter notebook train_baseline.ipynb
+
+```    await storeProjectConfig('YOUR-PROJECT', {
+
+CodeRiskRadar/
+
+├── frontend/                 # React UI    PR -->|Event| API  autoCreateJiraIssues: true,
+
+│   ├── src/
+
+│   │   ├── components/      # UI Components    API --> Resolver  severityThreshold: 'HIGH',
+
+│   │   │   ├── Radar.jsx           # D3 radar chart
+
+│   │   │   ├── RiskBreakdown.jsx   # Risk factors    Resolver --> ML  customRules: [...]
+
+│   │   │   ├── SimilarIncidents.jsx # Similar PRs
+
+│   │   │   └── ActionsPanel.jsx    # Action buttons    ML --> Storage});
+
+│   │   ├── App.jsx          # Main component
+
+│   │   └── styles.css       # Tailwind + custom    Storage --> Seed```
+
+│   ├── webpack.config.js    # CSP-compliant build
+
+│   └── package.json    Storage --> Team
+
+│
+
+├── src/    ML -->|Risk Score| Resolver## 📈 Machine Learning Setup (Optional)
+
+│   ├── bridge/              # Forge Resolvers
+
+│   │   ├── getRiskAnalysis.js      # Main resolver    Resolver -->|Response| UI
+
+│   │   ├── getSimilarIncidents.js  # Find similar PRs
+
+│   │   └── postPRComment.js        # Comment handler    UI -->|User Action| RovoCode Risk Radar includes a production-ready ML pipeline for risk prediction. For MVP, the app uses regex-based detection. For advanced deployments:
+
+│   │
+
+│   ├── services/            # Core Logic    Rovo --> ML
+
+│   │   └── mlService_v3.js         # ML engine (hybrid)
+
+│   │    ### Train Custom Model
+
+│   └── rovo/               # Rovo AI Agents
+
+│       ├── prQualityAgent.js       # Quality assistant    style PR fill:#0052CC
+
+│       └── riskAgent.js            # Risk analyzer
+
+│    style ML fill:#FF5630See **[ml/README.md](ml/README.md)** for complete ML pipeline documentation.
+
+├── seed-data/              # Pre-loaded data
+
+│   ├── metadata.json               # Stats & orgs    style Storage fill:#36B37E
+
+│   ├── quality_prs_*.json          # 623 quality PRs
+
+│   ├── risky_prs.json              # 64 anti-patterns    style Seed fill:#6554C0```bash
+
+│   └── embeddings.json             # 100 embeddings
+
+│    style Team fill:#00B8D9# Generate synthetic training data
+
+├── scripts/                # Migration tools
+
+│   ├── migrate_supabase_to_forge.js```cd ml
+
+│   └── load_seed_data_to_forge.js
+
+│python generate_synthetic_data.py
+
+└── manifest.yml            # Forge configuration
+
+```### ML Pipeline
+
+
+
+### Key Technologies# Install ML dependencies
+
+
+
+| Technology | Purpose | Version |```mermaidpip install pandas numpy scikit-learn joblib shap matplotlib
+
+|------------|---------|---------|
+
+| **Atlassian Forge** | Serverless runtime | Latest |flowchart LR
+
+| **React** | UI framework | 18.x |
+
+| **D3.js** | Data visualization | 7.x |    subgraph Input# Train model (Jupyter notebook)
+
+| **TailwindCSS** | Styling | 3.x |
+
+| **Webpack** | Build tool | 5.x |        A[PR Data]jupyter notebook train_baseline.ipynb
+
+| **Node.js** | Backend runtime | 20.x |
 
         A1[Title + Body]
 
+### ML Service API
+
         A2[Additions/Deletions]# Export coefficients for JavaScript deployment
+
+#### `calculateMLRiskScore(prData)`
 
         A3[Files Changed]python export_coefficients.py
 
+Analyzes PR and returns risk score using hybrid ML.
+
     end```
 
-    
+**Input:**
 
-    subgraph "Data Loading"**Output**:
+```javascript    
 
-        B[Load Seed Data]- `models/baseline_model.pkl` - Python model (for FastAPI)
+{
 
-        C[Load Team Data]- `models/model_coefficients.json` - For Forge Functions (5KB)
+  title: "Fix: Update README",    subgraph "Data Loading"**Output**:
 
-        B1[623 Quality PRs]
+  body: "Updated documentation...",
 
-        B2[64 Risky PRs]### Deploy ML Model
+  additions: 10,        B[Load Seed Data]- `models/baseline_model.pkl` - Python model (for FastAPI)
 
-        C1[Recent 500 Team PRs]
+  deletions: 2,
 
-    end**Option 1: JavaScript in Forge (Recommended for MVP)**
+  changed_files: 1        C[Load Team Data]- `models/model_coefficients.json` - For Forge Functions (5KB)
 
-    ```javascript
+}
 
-    subgraph "ML Processing"import { predictRiskJS } from './ml/inference_js';
+```        B1[623 Quality PRs]
 
-        D[Generate TF-IDF Vector<br/>256 dimensions]const result = await predictRiskJS(prPayload);
 
-        E[Cosine Similarity<br/>Score: 0-1]```
 
-        F[Find Top 20<br/>Similar PRs]
+**Output:**        B2[64 Risky PRs]### Deploy ML Model
 
-    end**Option 2: Python Microservice (Better accuracy)**
+```javascript
 
-    ```bash
+{        C1[Recent 500 Team PRs]
 
-    subgraph "Risk Calculation"cd ml
+  risk_score: 0.15,  // 0-1 scale
 
-        G[Quality Match Score]pip install fastapi uvicorn
+  factors: {    end**Option 1: JavaScript in Forge (Recommended for MVP)**
 
-        H[Risky Match Score]uvicorn inference:app --reload --port 8000
+    similarity_to_quality: 0.82,
 
-        I[Benchmark Comparison]```
+    similarity_to_risky: 0.12,    ```javascript
 
-        J[Final Risk Score<br/>0-100%]
+    size_vs_benchmark: 0.06,
 
-    endSee [ml/README.md](ml/README.md) for full ML documentation.
+    files_vs_benchmark: 0.12,    subgraph "ML Processing"import { predictRiskJS } from './ml/inference_js';
 
-    
+    title_quality: 1.0
 
-    subgraph Output## � Vector Search & Embeddings (Optional)
+  },        D[Generate TF-IDF Vector<br/>256 dimensions]const result = await predictRiskJS(prPayload);
 
-        K[Risk Analysis]
+  similar_prs: [
 
-        L[Similar PRs]Code Risk Radar can find similar past incidents and PRs using semantic search. This helps predict risks based on historical data.
+    {        E[Cosine Similarity<br/>Score: 0-1]```
 
-        M[Suggestions]
+      title: "docs: improve README clarity",
 
-    end### Quick Start
+      similarity: 0.89,        F[Find Top 20<br/>Similar PRs]
 
-    
+      source: "seed_quality",
 
-    A --> A1 & A2 & A3See **[embeddings/README.md](embeddings/README.md)** for complete documentation.
+      organization: "apache"    end**Option 2: Python Microservice (Better accuracy)**
 
-    A1 & A2 & A3 --> D
+    }
 
-    B --> B1 & B2```bash
+  ],    ```bash
 
-    C --> C1# Install dependencies
+  ml_model: "tfidf_cosine_hybrid_v3",
+
+  data_source: "seed_data_plus_team_learning",    subgraph "Risk Calculation"cd ml
+
+  seed_prs_analyzed: 687,
+
+  team_prs_analyzed: 23        G[Quality Match Score]pip install fastapi uvicorn
+
+}
+
+```        H[Risky Match Score]uvicorn inference:app --reload --port 8000
+
+
+
+#### `getPRImprovementSuggestions(prData)`        I[Benchmark Comparison]```
+
+
+
+Returns actionable suggestions based on industry patterns.        J[Final Risk Score<br/>0-100%]
+
+
+
+**Output:**    endSee [ml/README.md](ml/README.md) for full ML documentation.
+
+```javascript
+
+[    
+
+  {
+
+    category: "Title",    subgraph Output## � Vector Search & Embeddings (Optional)
+
+    severity: "high",
+
+    current: "Short title (12 chars)",        K[Risk Analysis]
+
+    suggestion: "Industry standard: 35+ chars. Be descriptive...",
+
+    reference: "seed_data_analysis",        L[Similar PRs]Code Risk Radar can find similar past incidents and PRs using semantic search. This helps predict risks based on historical data.
+
+    example: "apache/project: PR #1234"
+
+  }        M[Suggestions]
+
+]
+
+```    end### Quick Start
+
+
+
+---    
+
+
+
+## 🎨 UI Components    A --> A1 & A2 & A3See **[embeddings/README.md](embeddings/README.md)** for complete documentation.
+
+
+
+### Risk Score Display    A1 & A2 & A3 --> D
+
+
+
+Circular indicator showing 0-100% risk with color coding:    B --> B1 & B2```bash
+
+- **0-40%**: Green (Low Risk)
+
+- **40-70%**: Orange (Medium Risk)    C --> C1# Install dependencies
+
+- **70-100%**: Red (High Risk)
 
     B1 & B2 & C1 --> Ecd embeddings
 
+### Risk Factors Breakdown
+
     D --> Epip install -r requirements.txt
 
-    E --> F
+Progress bars for each factor:
 
-    F --> G & H & I# Setup environment
+- Similarity to quality PRs    E --> F
 
-    G & H & I --> Jcp .env.example .env
+- Similarity to risky PRs
+
+- Size vs benchmark    F --> G & H & I# Setup environment
+
+- Files vs benchmark
+
+- Title quality    G & H & I --> Jcp .env.example .env
+
+- Description quality
 
     J --> K & L & M# Edit .env with your OpenAI + Supabase keys
 
+### AI Suggestions Panel
+
     
 
-    style D fill:#FF5630# Setup database
+Priority-ranked suggestions with:
 
-    style E fill:#FF5630# Run embeddings/schema.sql in Supabase SQL editor
+- Category (Title, Size, Description, Scope)    style D fill:#FF5630# Setup database
 
-    style F fill:#FF5630
+- Severity (High, Medium, Low, Info)
 
-    style J fill:#36B37E# Test indexing
+- Current state    style E fill:#FF5630# Run embeddings/schema.sql in Supabase SQL editor
 
-```python index_to_supabase.py --type pr --source-id test/PR-1 --content "Example PR" --metadata '{}'
+- Specific suggestion
+
+- Example from similar PR    style F fill:#FF5630
 
 
 
-### Data Flow# Test search
+### Similar PRs    style J fill:#36B37E# Test indexing
 
-python query_similar.py --content "SQL injection bug" --type pr --top-k 5
 
-```mermaid```
 
-sequenceDiagram
+List of most similar PRs with:```python index_to_supabase.py --type pr --source-id test/PR-1 --content "Example PR" --metadata '{}'
 
-    participant User### Integration with Risk Analysis
+- Similarity score (0-100%)
 
-    participant Bitbucket
+- Organization (Apache, Google, etc.)
+
+- Source (seed data or team)
+
+- Quick stats### Data Flow# Test search
+
+
+
+---python query_similar.py --content "SQL injection bug" --type pr --top-k 5
+
+
+
+## 🔒 Privacy & Security```mermaid```
+
+
+
+✅ **No External Egress**: All data stays in Forge storage  sequenceDiagram
+
+✅ **Runs on Atlassian Eligible**: Verified compliance  
+
+✅ **Team Data Isolation**: Each installation has separate storage      participant User### Integration with Risk Analysis
+
+✅ **Public Data Only**: Seed data from public repos (Apache, etc.)  
+
+✅ **No PII Stored**: Only PR metadata and statistics      participant Bitbucket
+
+✅ **CSP Compliant**: Content Security Policy enforced
 
     participant Forge```python
 
+---
+
     participant MLfrom embeddings.integration_example import EnhancedRiskAnalyzer
+
+## 📊 Performance
 
     participant Storage
 
-    # Analyze PR with historical context
+| Metric | Value |
 
-    User->>Bitbucket: Open PRanalyzer = EnhancedRiskAnalyzer(use_supabase=True)
+|--------|-------|    # Analyze PR with historical context
 
-    Bitbucket->>Forge: Trigger Panel Loadresult = analyzer.analyze_pr_with_history(pr_payload)
+| **PR Analysis Time** | ~1.5s |
 
-    
+| **Storage Usage** | ~2MB seed data |    User->>Bitbucket: Open PRanalyzer = EnhancedRiskAnalyzer(use_supabase=True)
 
-    alt First Time Useprint(f"ML Risk: {result['ml_risk_score']}")
+| **ML Accuracy (new team)** | 70%+ |
 
-        Forge->>Storage: Check for seed_metadataprint(f"Final Risk (with history): {result['final_risk_score']}")
+| **ML Accuracy (100+ PRs)** | 85%+ |    Bitbucket->>Forge: Trigger Panel Loadresult = analyzer.analyze_pr_with_history(pr_payload)
 
-        Storage-->>Forge: Not Foundprint(f"Similar PRs: {result['historical_context']['similar_prs_count']}")
+| **API Calls per PR** | 2 (Bitbucket API) |
 
-        Forge->>Forge: Initialize Seed Data```
+| **External Dependencies** | 0 (Runs on Atlassian) |    
 
-        Note over Forge: Load 623 quality PRs<br/>64 risky PRs<br/>100 embeddings
 
-        Forge->>Storage: Store Seed Data (~2MB)### Privacy-Preserving Options
 
-    else Subsequent Use
+---    alt First Time Useprint(f"ML Risk: {result['ml_risk_score']}")
 
-        Storage-->>Forge: Seed Data Exists- **OpenAI + Anonymization**: Replace secrets/PII before embedding (enabled by default)
 
-    end- **Local Embeddings**: Run models locally (no API calls): `pip install sentence-transformers`
 
-    - **Forge Fallback**: Use TF-IDF for small datasets (no external dependencies)
+## 🧪 Testing        Forge->>Storage: Check for seed_metadataprint(f"Final Risk (with history): {result['final_risk_score']}")
 
-    Forge->>ML: Calculate Risk Score
 
-    ML->>Storage: Fetch Seed + Team PRsSee [embeddings/PRIVACY.md](embeddings/PRIVACY.md) for detailed privacy guidelines.
 
-    Storage-->>ML: Return Dataset
+### Run Frontend Tests        Storage-->>Forge: Not Foundprint(f"Similar PRs: {result['historical_context']['similar_prs_count']}")
 
-    ML->>ML: TF-IDF + Cosine Similarity## �🧪 Testing
+```bash
 
-    ML->>ML: Compare vs Benchmarks
+cd frontend        Forge->>Forge: Initialize Seed Data```
 
-    ML-->>Forge: Risk Score + Similar PRsRun unit tests:
+npm test
 
-    ```bash
+```        Note over Forge: Load 623 quality PRs<br/>64 risky PRs<br/>100 embeddings
 
-    Forge->>Storage: Store Team PR (Learning)npm test
 
-    ```
 
-    Forge-->>Bitbucket: Return Analysis
+### Test ML Service        Forge->>Storage: Store Seed Data (~2MB)### Privacy-Preserving Options
 
-    Bitbucket-->>User: Display Risk PanelTest with Forge tunnel (local development):
+```bash
 
-    ```bash
-
-    User->>User: Review Suggestionsforge tunnel
-
-    ```
-
-    opt User Improves PR
-
-        User->>Bitbucket: Update PR## 🛡️ Security & Safety
-
-        Note over ML,Storage: Future PRs learn<br/>from this outcome
-
-    endCode Risk Radar follows strict safety principles:
+npm test    else Subsequent Use
 
 ```
 
-1. **Explicit Approval Required**: All write operations (Jira issues, repo commits) show a dry-run preview and require user confirmation
+        Storage-->>Forge: Seed Data Exists- **OpenAI + Anonymization**: Replace secrets/PII before embedding (enabled by default)
 
-### Storage Schema2. **Rate Limiting**: Maximum 10 LLM calls per PR to prevent abuse
+### View Logs
 
-3. **Data Minimization**: Only code diffs are sent to external APIs, never full repos
+```bash    end- **Local Embeddings**: Run models locally (no API calls): `pip install sentence-transformers`
+
+forge logs -s 10m -n 100
+
+```    - **Forge Fallback**: Use TF-IDF for small datasets (no external dependencies)
+
+
+
+### Check Eligibility    Forge->>ML: Calculate Risk Score
+
+```bash
+
+forge eligibility    ML->>Storage: Fetch Seed + Team PRsSee [embeddings/PRIVACY.md](embeddings/PRIVACY.md) for detailed privacy guidelines.
+
+```
+
+    Storage-->>ML: Return Dataset
+
+Expected: ✅ "eligible for the Runs on Atlassian program"
+
+    ML->>ML: TF-IDF + Cosine Similarity## �🧪 Testing
+
+---
+
+    ML->>ML: Compare vs Benchmarks
+
+## 🛠️ Development
+
+    ML-->>Forge: Risk Score + Similar PRsRun unit tests:
+
+### Local Development
+
+    ```bash
+
+```bash
+
+# Install dependencies    Forge->>Storage: Store Team PR (Learning)npm test
+
+npm install
+
+cd frontend && npm install && cd ..    ```
+
+
+
+# Build frontend    Forge-->>Bitbucket: Return Analysis
+
+cd frontend && npm run build && cd ..
+
+    Bitbucket-->>User: Display Risk PanelTest with Forge tunnel (local development):
+
+# Deploy to development
+
+forge deploy    ```bash
+
+
+
+# View logs    User->>User: Review Suggestionsforge tunnel
+
+forge logs -s 5m
+
+```    ```
+
+
+
+### Adding New Features    opt User Improves PR
+
+
+
+1. **Update ML Service**: Edit `src/services/mlService_v3.js`        User->>Bitbucket: Update PR## 🛡️ Security & Safety
+
+2. **Update UI**: Edit `frontend/src/App.jsx` or components
+
+3. **Update Resolvers**: Edit `src/bridge/*.js`        Note over ML,Storage: Future PRs learn<br/>from this outcome
+
+4. **Rebuild Frontend**: `cd frontend && npm run build`
+
+5. **Deploy**: `forge deploy`    endCode Risk Radar follows strict safety principles:
+
+
+
+### Code Quality```
+
+
+
+```bash1. **Explicit Approval Required**: All write operations (Jira issues, repo commits) show a dry-run preview and require user confirmation
+
+# Lint code
+
+npm run lint### Storage Schema2. **Rate Limiting**: Maximum 10 LLM calls per PR to prevent abuse
+
+
+
+# Format code3. **Data Minimization**: Only code diffs are sent to external APIs, never full repos
+
+npm run format
 
 ```mermaid4. **Audit Trail**: All approvals are logged in Forge storage
 
-erDiagram5. **Fail-Safe Defaults**: Errors never block PRs; generic comments are posted instead
+# Run all checks
+
+npm run validateerDiagram5. **Fail-Safe Defaults**: Errors never block PRs; generic comments are posted instead
+
+```
 
     SEED_METADATA {
 
+---
+
         string versionSee [SECURITY.md](SECURITY.md) for full details.
+
+## 🐛 Troubleshooting
 
         date migrated_at
 
+### Seed Data Not Loading
+
         array organizations## 📊 Usage Examples
 
-        object stats
+```bash
+
+# Check logs for initialization        object stats
+
+forge logs -s 10m | grep "seed data"
 
     }### Rovo Agent Queries
 
-    
+# Should see: "✅ Loaded 623 quality PRs"
 
-    SEED_QUALITY_PRS {```
+```    
 
-        string title"What risks did you find in PR-42?"
 
-        string body"Explain the SQL injection risk on line 156"
 
-        int additions"Show me similar past vulnerabilities"
+### Risk Scores Seem Wrong    SEED_QUALITY_PRS {```
 
-        int deletions"What's the business impact of the hardcoded secret?"
+
+
+```bash        string title"What risks did you find in PR-42?"
+
+# Enable debug logging
+
+forge logs -s 5m -n 100        string body"Explain the SQL injection risk on line 156"
+
+
+
+# Look for:        int additions"Show me similar past vulnerabilities"
+
+# "🔍 Finding similar PRs..."
+
+# "📊 Analyzing against X PRs"        int deletions"What's the business impact of the hardcoded secret?"
+
+```
 
         int changed_files```
 
+### UI Not Rendering
+
         float quality_score
 
-        string organization### Rovo Actions
+1. Check CSP errors in browser console
+
+2. Verify `styles.css` is generated: `frontend/dist/styles.css`        string organization### Rovo Actions
+
+3. Rebuild: `cd frontend && npm run build`
 
         string doc_id
+
+### External Egress Error
 
     }- **Explain Risk**: Get detailed technical explanation with OWASP/CWE references
 
-    - **Suggest Fix**: AI-generated code patches
+```bash
+
+# Verify eligibility    - **Suggest Fix**: AI-generated code patches
+
+forge eligibility
 
     SEED_RISKY_PRS {- **Approve Fix**: Apply fix after preview confirmation
 
-        string title
+# Should be green ✅
 
-        string body## 🎯 Codegeist 2025 Criteria
+```        string title
 
-        int additions
 
-        int deletions✅ **Apps for Software Teams**: Integrates Bitbucket + Jira  
 
-        int changed_files✅ **Runs on Atlassian**: Forge-first architecture  
+---        string body## 🎯 Codegeist 2025 Criteria
 
-        float quality_score✅ **Rovo Integration**: Agent + Actions implemented  
 
-        string reason✅ **Innovation**: Context-aware risk scoring with vector search  
 
-    }✅ **User Safety**: Dry-run previews for all write ops  
+## 📝 Migration Guide        int additions
 
-    
 
-    SEED_EMBEDDINGS {## 🗺️ Roadmap
 
-        string doc_id
+### From Supabase to Forge Storage        int deletions✅ **Apps for Software Teams**: Integrates Bitbucket + Jira  
 
-        array embedding_384### Post-MVP Features
 
-        object metadata- [ ] Multi-language support (Java, Go, Rust)
 
-    }- [ ] Integration with SAST tools (Snyk, SonarQube)
+Already completed! Seed data is pre-loaded in `seed-data/` directory.        int changed_files✅ **Runs on Atlassian**: Forge-first architecture  
 
-    - [ ] Risk trend dashboard in Jira
 
-    TEAM_PRS {- [ ] Auto-remediation with one-click apply
 
-        string pr_id- [ ] Custom ML models for team-specific patterns
+### Updating Seed Data        float quality_score✅ **Rovo Integration**: Agent + Actions implemented  
 
-        string title- [ ] Slack/Teams notifications
 
-        string body
 
-        int additions## 🤝 Contributing
+1. Edit migration script: `scripts/migrate_supabase_to_forge.js`        string reason✅ **Innovation**: Context-aware risk scoring with vector search  
 
-        int deletions
+2. Run: `node scripts/migrate_supabase_to_forge.js`
 
-        int changed_filesWe welcome contributions! Please:
+3. Redeploy: `forge deploy`    }✅ **User Safety**: Dry-run previews for all write ops  
 
-        float risk_score
 
-        timestamp analyzed_at1. Fork the repository
 
-    }2. Create a feature branch
+---    
 
-    3. Write tests for new functionality
 
-    TEAM_PR_OUTCOMES {4. Submit a PR with clear description
 
-        string pr_id
+## 🤝 Contributing    SEED_EMBEDDINGS {## 🗺️ Roadmap
 
-        string outcome## 📄 License
 
-        int review_cycles
 
-        bool mergedMIT License - see LICENSE file for details
+We welcome contributions! Please:        string doc_id
+
+
+
+1. Fork the repository        array embedding_384### Post-MVP Features
+
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+
+3. Commit changes: `git commit -m 'Add amazing feature'`        object metadata- [ ] Multi-language support (Java, Go, Rust)
+
+4. Push to branch: `git push origin feature/amazing-feature`
+
+5. Open a Pull Request    }- [ ] Integration with SAST tools (Snyk, SonarQube)
+
+
+
+---    - [ ] Risk trend dashboard in Jira
+
+
+
+## 📄 License    TEAM_PRS {- [ ] Auto-remediation with one-click apply
+
+
+
+MIT License - see [LICENSE](LICENSE) for details        string pr_id- [ ] Custom ML models for team-specific patterns
+
+
+
+---        string title- [ ] Slack/Teams notifications
+
+
+
+## 🙏 Acknowledgments        string body
+
+
+
+- **Seed Data**: 623 PRs from Apache, Google, Microsoft, and other open-source projects        int additions## 🤝 Contributing
+
+- **Atlassian Forge**: Serverless platform for Atlassian products
+
+- **React**: UI library by Meta        int deletions
+
+- **D3.js**: Data visualization by Mike Bostock
+
+- **TailwindCSS**: Utility-first CSS framework        int changed_filesWe welcome contributions! Please:
+
+
+
+---        float risk_score
+
+
+
+## 📧 Support        timestamp analyzed_at1. Fork the repository
+
+
+
+- **Issues**: [GitHub Issues](https://github.com/Shafwansafi06/CodeRiskRadar/issues)    }2. Create a feature branch
+
+- **Discussions**: [GitHub Discussions](https://github.com/Shafwansafi06/CodeRiskRadar/discussions)
+
+- **Email**: shafwan.safi@example.com    3. Write tests for new functionality
+
+
+
+---    TEAM_PR_OUTCOMES {4. Submit a PR with clear description
+
+
+
+<div align="center">        string pr_id
+
+
+
+**Made with ❤️ by the PitStop AI Team**        string outcome## 📄 License
+
+
+
+[⬆ Back to Top](#-pitstop-ai---intelligent-pr-risk-analysis-for-bitbucket)        int review_cycles
+
+
+
+</div>        bool mergedMIT License - see LICENSE file for details
+
 
         timestamp completed_at
 

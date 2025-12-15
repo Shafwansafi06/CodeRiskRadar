@@ -13,11 +13,8 @@ const {
   formatSummary: formatRiskSummary
 } = require('./rovo/riskAgent');
 
-const {
-  historianAgent,
-  queryHistory,
-  formatIncidents
-} = require('./rovo/historianAgent');
+// Using ML service for historical analysis
+const { findSimilarPRs } = require('./services/mlService_v3.js');
 
 // Import actions
 const { createJiraTaskHandler } = require('./actions/createJiraTask');

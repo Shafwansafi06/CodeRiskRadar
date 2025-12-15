@@ -6,7 +6,9 @@
 
 import api from '@forge/api';
 import Resolver from '@forge/resolver';
-import { calculateMLRiskScore, findSimilarPRs, getPRImprovementSuggestions } from '../services/mlService.js';
+import mlService from '../services/mlService_v3.js';
+
+const { calculateMLRiskScore, findSimilarPRs, getPRImprovementSuggestions } = mlService;
 
 const resolver = new Resolver();
 

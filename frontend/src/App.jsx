@@ -6,7 +6,6 @@ function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
     loadData();
@@ -28,24 +27,78 @@ function App() {
   };
 
   const getRiskLevel = (score) => {
-    if (score < 0.4) return 'low';
-    if (score < 0.7) return 'medium';
+    if (score < 0.3) return 'low';
+    if (score < 0.6) return 'medium';
     return 'high';
   };
 
-  const getRiskLabel = (score) => {
-    if (score < 0.4) return 'Low Risk';
-    if (score < 0.7) return 'Medium Risk';
-    return 'High Risk';
+  const getRiskColor = (score) => {
+    if (score < 0.3) return '#10b981';
+    if (score < 0.6) return '#f59e0b';
+    return '#ef4444';
+  };
+
+  const formatNumber = (num) => {
+    if (!num && num !== 0) return '0';
+    return num.toLocaleString();
+  };
+
+  // Calculate logical risk factors
+  const calculateRiskFactors = () => {
+    if (!data) return [];
+    
+    const { additions = 0, deletions = 0, changed_files = 0 } = data;
+    const totalChanges = additions + deletions;
+    
+    const factors = [];
+    
+    // 1. Change Size Risk (0-100%)
+    const sizeRisk = Math.min((totalChanges / 500) * 100, 100);
+    factors.push({
+      name: 'Code Size',
+      value: Math.round(sizeRisk),
+      description: totalChanges < 100 ? 'Small change' : totalChanges < 300 ? 'Medium change' : 'Large change',
+      color: sizeRisk < 30 ? '#10b981' : sizeRisk < 60 ? '#f59e0b' : '#ef4444'
+    });
+    
+    // 2. File Complexity Risk (0-100%)
+    const fileRisk = Math.min((changed_files / 20) * 100, 100);
+    factors.push({
+      name: 'File Complexity',
+      value: Math.round(fileRisk),
+      description: changed_files < 5 ? 'Focused change' : changed_files < 10 ? 'Moderate scope' : 'Wide scope',
+      color: fileRisk < 30 ? '#10b981' : fileRisk < 60 ? '#f59e0b' : '#ef4444'
+    });
+    
+    // 3. Code Churn Risk (0-100%)
+    const churnRisk = deletions > 0 ? Math.min((deletions / additions) * 100, 100) : 0;
+    factors.push({
+      name: 'Code Churn',
+      value: Math.round(churnRisk),
+      description: churnRisk < 30 ? 'Mostly additions' : churnRisk < 60 ? 'Balanced' : 'Heavy refactoring',
+      color: churnRisk < 30 ? '#10b981' : churnRisk < 60 ? '#f59e0b' : '#ef4444'
+    });
+    
+    // 4. Documentation Quality (0-100%, inverse)
+    const { title = '', body = '' } = data;
+    const docScore = Math.min(((title.length + body.length) / 100) * 100, 100);
+    const docRisk = 100 - docScore;
+    factors.push({
+      name: 'Documentation',
+      value: Math.round(docRisk),
+      description: docRisk < 30 ? 'Well documented' : docRisk < 60 ? 'Needs detail' : 'Poorly documented',
+      color: docRisk < 30 ? '#10b981' : docRisk < 60 ? '#f59e0b' : '#ef4444'
+    });
+    
+    return factors;
   };
 
   if (loading) {
     return (
-      <div className={`risk-radar-app ${darkMode ? 'dark' : ''}`}>
-        <div className="rr-content">
-          <div className="rr-loading">
-            <div>Loading...</div>
-          </div>
+      <div className="risk-container">
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Analyzing PR with AI...</p>
         </div>
       </div>
     );
@@ -53,133 +106,210 @@ function App() {
 
   if (error) {
     return (
-      <div className={`risk-radar-app ${darkMode ? 'dark' : ''}`}>
-        <div className="rr-content">
-          <div className="rr-section">
-            <p>{error}</p>
-          </div>
+      <div className="risk-container">
+        <div className="error-state">
+          <div className="error-icon">⚠️</div>
+          <h3>Analysis Failed</h3>
+          <p>{error}</p>
+          <button onClick={loadData} className="retry-btn">Retry</button>
         </div>
       </div>
     );
   }
 
-  const riskLevel = getRiskLevel(data.risk_score);
-  const riskPercent = Math.round(data.risk_score * 100);
+  if (!data) {
+    return (
+      <div className="risk-container">
+        <div className="error-state">
+          <p>No data available</p>
+        </div>
+      </div>
+    );
+  }
+
+  const riskScore = data.risk_score || 0;
+  const riskPercent = Math.round(riskScore * 100);
+  const riskLevel = getRiskLevel(riskScore);
+  const riskColor = getRiskColor(riskScore);
+  const riskFactors = calculateRiskFactors();
+  
+  const additions = data.additions || 0;
+  const deletions = data.deletions || 0;
+  const files = data.changed_files || 0;
 
   return (
-    <div className={`risk-radar-app ${darkMode ? 'dark' : ''}`}>
-      <div className="rr-header">
-        <div>
-          <div className="rr-logo">⚡</div>
+    <div className="risk-container">
+      {/* Header */}
+      <div className="risk-header">
+        <div className="header-content">
+          <div className="logo-section">
+            <span className="logo-icon">⚡</span>
+            <div>
+              <h1>Risk Radar</h1>
+              <p className="subtitle">AI-Powered Code Analysis</p>
+            </div>
+          </div>
         </div>
-        <div>
-          <h1>Risk Radar</h1>
-          <p>AI-Powered Analysis</p>
-        </div>
-        <button onClick={() => setDarkMode(!darkMode)}>
-          {darkMode ? '☀️' : '🌙'}
-        </button>
       </div>
 
-      <div className="rr-content">
-        {/* Risk Score */}
-        <div className="rr-section">
-          <div className="rr-risk-circle">
-            <div className="rr-risk-score">{riskPercent}</div>
-            <div className={`rr-risk-badge ${riskLevel}`}>
-              {getRiskLabel(data.risk_score)}
+      {/* Risk Score Circle */}
+      <div className="risk-score-section">
+        <div className="score-circle" style={{ '--score-color': riskColor }}>
+          <svg className="progress-ring" width="200" height="200">
+            <circle
+              className="progress-ring-bg"
+              cx="100"
+              cy="100"
+              r="85"
+            />
+            <circle
+              className="progress-ring-fill"
+              cx="100"
+              cy="100"
+              r="85"
+              style={{
+                strokeDasharray: `${riskPercent * 5.34} 534`,
+                stroke: riskColor
+              }}
+            />
+          </svg>
+          <div className="score-content">
+            <div className="score-number" style={{ color: riskColor }}>{riskPercent}</div>
+            <div className="score-label">{riskLevel.toUpperCase()}</div>
+          </div>
+        </div>
+        <div className={`risk-badge badge-${riskLevel}`}>
+          {riskLevel === 'low' && '✓ Safe to Merge'}
+          {riskLevel === 'medium' && '⚡ Review Required'}
+          {riskLevel === 'high' && '⚠ High Risk'}
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="stats-grid">
+        <div className="stat-card stat-additions">
+          <div className="stat-value">+{formatNumber(additions)}</div>
+          <div className="stat-label">Additions</div>
+        </div>
+        <div className="stat-card stat-deletions">
+          <div className="stat-value">-{formatNumber(deletions)}</div>
+          <div className="stat-label">Deletions</div>
+        </div>
+        <div className="stat-card stat-files">
+          <div className="stat-value">{formatNumber(files)}</div>
+          <div className="stat-label">Files</div>
+        </div>
+      </div>
+
+      {/* Risk Factors */}
+      <div className="section-card">
+        <h3 className="section-title">
+          <span className="title-icon">📊</span>
+          Risk Factors
+        </h3>
+        <div className="factors-list">
+          {riskFactors.map((factor, index) => (
+            <div key={index} className="factor-item">
+              <div className="factor-header">
+                <span className="factor-name">{factor.name}</span>
+                <span className="factor-value" style={{ color: factor.color }}>
+                  {factor.value}%
+                </span>
+              </div>
+              <div className="factor-bar">
+                <div 
+                  className="factor-fill" 
+                  style={{ 
+                    width: `${factor.value}%`,
+                    background: `linear-gradient(90deg, ${factor.color}, ${factor.color}dd)`
+                  }}
+                />
+              </div>
+              <p className="factor-description">{factor.description}</p>
             </div>
-            {data.dataSource && (
-              <div className="rr-badge success">
-                {data.dataSource}
-              </div>
-            )}
-            {data.version && (
-              <div className="rr-badge info">
-                {data.version}
-              </div>
-            )}
-          </div>
+          ))}
         </div>
+      </div>
 
-        {/* Stats */}
-        <div className="rr-stats">
-          <div className="rr-stat">
-            <div className="rr-stat-value additions">+{data.stats?.additions || 0}</div>
-            <div className="rr-stat-label">Additions</div>
-          </div>
-          <div className="rr-stat">
-            <div className="rr-stat-value deletions">-{data.stats?.deletions || 0}</div>
-            <div className="rr-stat-label">Deletions</div>
-          </div>
-          <div className="rr-stat">
-            <div className="rr-stat-value files">{data.stats?.changedFiles || 0}</div>
-            <div className="rr-stat-label">Files</div>
-          </div>
-        </div>
-
-        {/* Risk Factors */}
-        <div className="rr-section">
-          <h3>Risk Factors</h3>
-          {data.factors && Object.entries(data.factors).map(([key, value]) => {
-            const level = getRiskLevel(value);
-            const percent = Math.round(value * 100);
-            return (
-              <div key={key} className="rr-factor">
-                <div className="rr-factor-header">
-                  <span className="rr-factor-label">{key}</span>
-                  <span className="rr-factor-value">{percent}%</span>
-                </div>
-                <div className="rr-progress">
-                  <div 
-                    className={`rr-progress-bar ${level}`}
-                    data-percent={Math.round(percent / 10) * 10}
-                    role="progressbar"
-                    aria-valuenow={percent}
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  ></div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Files Changed */}
-        {data.filesChanged && data.filesChanged.length > 0 && (
-          <div className="rr-section">
-            <h3>Files Changed ({data.filesChanged.length})</h3>
-            {data.filesChanged.slice(0, 5).map((file, idx) => {
-              const fileRiskLevel = getRiskLevel(file.risk_score || 0);
-              return (
-                <div key={idx} className="rr-file">
-                  <div className="rr-file-header">
-                    <span className="rr-file-name">{file.filename}</span>
-                    <span className={`rr-file-risk ${fileRiskLevel}`}>
-                      {Math.round((file.risk_score || 0) * 100)}%
-                    </span>
+      {/* AI Suggestions */}
+      {data.suggestions && data.suggestions.length > 0 && (
+        <div className="section-card">
+          <h3 className="section-title">
+            <span className="title-icon">💡</span>
+            AI Suggestions ({data.suggestions.length})
+          </h3>
+          <div className="suggestions-list">
+            {data.suggestions.map((suggestion, index) => (
+              <div 
+                key={index} 
+                className={`suggestion-card severity-${suggestion.severity?.toLowerCase() || 'medium'}`}
+              >
+                <div className="suggestion-header">
+                  <div className="suggestion-category">
+                    {suggestion.category || 'Improvement'}
                   </div>
-                  <div>
-                    +{file.additions || 0} -{file.deletions || 0} ({file.changes || 0} changes)
-                  </div>
+                  <span className={`severity-badge badge-${suggestion.severity?.toLowerCase() || 'medium'}`}>
+                    {suggestion.severity || 'MEDIUM'}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Suggestions */}
-        {data.suggestions && data.suggestions.length > 0 && (
-          <div className="rr-section">
-            <h3>AI Suggestions ({data.suggestions.length})</h3>
-            {data.suggestions.slice(0, 3).map((suggestion, idx) => (
-              <div key={idx} className="rr-suggestion">
-                <div className="rr-suggestion-title">{suggestion.title}</div>
-                <div className="rr-suggestion-desc">{suggestion.description}</div>
+                
+                {suggestion.current && (
+                  <div className="suggestion-current">
+                    <strong>Current:</strong> {suggestion.current}
+                  </div>
+                )}
+                
+                <div className="suggestion-text">
+                  <strong>Suggestion:</strong> {suggestion.suggestion}
+                </div>
+                
+                {suggestion.reference && (
+                  <div className="suggestion-reference">
+                    📚 Reference: {suggestion.reference}
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Similar PRs */}
+      {data.ml_analysis?.similar_prs && data.ml_analysis.similar_prs.length > 0 && (
+        <div className="section-card">
+          <h3 className="section-title">
+            <span className="title-icon">🔍</span>
+            Similar PRs
+          </h3>
+          <div className="similar-prs-list">
+            {data.ml_analysis.similar_prs.map((pr, index) => (
+              <div key={index} className="similar-pr-card">
+                <div className="pr-header">
+                  <span className="pr-title">{pr.title}</span>
+                  <span className="similarity-badge">
+                    {Math.round((pr.similarity || 0) * 100)}% match
+                  </span>
+                </div>
+                <div className="pr-meta">
+                  {pr.organization && (
+                    <span className="pr-org">🏢 {pr.organization}</span>
+                  )}
+                  <span className="pr-changes">
+                    +{pr.additions || 0} -{pr.deletions || 0}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="footer">
+        <span className="model-info">
+          {data.ml_analysis?.ml_model || 'baseline'} • 
+          {data.ml_analysis?.data_source || 'statistical'}
+        </span>
       </div>
     </div>
   );

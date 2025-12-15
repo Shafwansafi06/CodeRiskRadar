@@ -1,10 +1,12 @@
 import Resolver from '@forge/resolver';
-import { HistorianAgent } from '../rovo/historianAgent';
+import mlService from '../services/mlService_v3.js';
+
+const { findSimilarPRs } = mlService;
 
 const resolver = new Resolver();
 
 /**
- * Get similar historical incidents
+ * Get similar historical incidents using ML service
  */
 resolver.define('getSimilarIncidents', async (req) => {
   const { payload } = req;
@@ -12,22 +14,20 @@ resolver.define('getSimilarIncidents', async (req) => {
   console.log('getSimilarIncidents invoked');
 
   try {
-    const { embedding, code_diff, top_k = 5 } = payload;
+    const { title, body, code_diff, top_k = 5 } = payload;
     
-    if (!embedding && !code_diff) {
-      throw new Error('Must provide either embedding or code_diff');
+    if (!title && !body && !code_diff) {
+      throw new Error('Must provide title, body, or code_diff');
     }
 
-    const historianAgent = new HistorianAgent();
+    const prText = `${title || ''} ${body || ''} ${code_diff || ''}`;
+    const similarPRs = await findSimilarPRs(prText, top_k);
     
-    const result = await historianAgent.query({
-      embedding,
-      code_diff,
-      top_k
-    });
-
-    console.log('Similar incidents retrieved:', result.similar_incidents?.length || 0);
-    return result;
+    console.log('Similar incidents retrieved:', similarPRs.length);
+    return {
+      similar_incidents: similarPRs,
+      total_found: similarPRs.length
+    };
 
   } catch (error) {
     console.error('Get similar incidents failed:', error);
