@@ -45,9 +45,9 @@ function App() {
 
   // Calculate logical risk factors
   const calculateRiskFactors = () => {
-    if (!data) return [];
+    if (!data || !data.stats) return [];
     
-    const { additions = 0, deletions = 0, changed_files = 0 } = data;
+    const { additions = 0, deletions = 0, changedFiles: changed_files = 0 } = data.stats;
     const totalChanges = additions + deletions;
     
     const factors = [];
@@ -133,9 +133,9 @@ function App() {
   const riskColor = getRiskColor(riskScore);
   const riskFactors = calculateRiskFactors();
   
-  const additions = data.additions || 0;
-  const deletions = data.deletions || 0;
-  const files = data.changed_files || 0;
+  const additions = data.stats?.additions || 0;
+  const deletions = data.stats?.deletions || 0;
+  const files = data.stats?.changedFiles || 0;
 
   return (
     <div className="risk-container">
@@ -155,20 +155,20 @@ function App() {
       {/* Risk Score Circle */}
       <div className="risk-score-section">
         <div className="score-circle" style={{ '--score-color': riskColor }}>
-          <svg className="progress-ring" width="200" height="200">
+          <svg className="progress-ring" width="160" height="160">
             <circle
               className="progress-ring-bg"
-              cx="100"
-              cy="100"
-              r="85"
+              cx="80"
+              cy="80"
+              r="68"
             />
             <circle
               className="progress-ring-fill"
-              cx="100"
-              cy="100"
-              r="85"
+              cx="80"
+              cy="80"
+              r="68"
               style={{
-                strokeDasharray: `${riskPercent * 5.34} 534`,
+                strokeDasharray: `${riskPercent * 4.27} 427`,
                 stroke: riskColor
               }}
             />

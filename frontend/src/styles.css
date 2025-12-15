@@ -16,14 +16,16 @@ body {
 }
 
 /* ============================================================================
-   CONTAINER
+   CONTAINER - Optimized for Bitbucket Panel
    ============================================================================ */
 
 .risk-container {
-  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-  padding: 20px;
+  padding: 12px;
   color: #e2e8f0;
+  overflow-x: hidden;
 }
 
 /* ============================================================================
@@ -33,9 +35,9 @@ body {
 .risk-header {
   background: rgba(30, 41, 59, 0.6);
   backdrop-filter: blur(12px);
-  border-radius: 16px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
   border: 1px solid rgba(148, 163, 184, 0.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
@@ -53,22 +55,23 @@ body {
 }
 
 .logo-icon {
-  font-size: 32px;
+  font-size: 24px;
   filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.5));
 }
 
 .risk-header h1 {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin: 0;
+  white-space: nowrap;
 }
 
 .subtitle {
-  font-size: 12px;
+  font-size: 11px;
   color: #94a3b8;
   margin-top: 2px;
 }
@@ -156,12 +159,12 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 20px;
+  padding: 24px 16px;
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.6) 100%);
   backdrop-filter: blur(12px);
-  border-radius: 20px;
+  border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.1);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
@@ -185,9 +188,9 @@ body {
 
 .score-circle {
   position: relative;
-  width: 200px;
-  height: 200px;
-  margin-bottom: 16px;
+  width: 160px;
+  height: 160px;
+  margin-bottom: 12px;
   z-index: 1;
 }
 
@@ -218,14 +221,14 @@ body {
 }
 
 .score-number {
-  font-size: 56px;
+  font-size: 44px;
   font-weight: 800;
   line-height: 1;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .score-label {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
@@ -234,7 +237,7 @@ body {
 }
 
 .risk-badge {
-  padding: 10px 24px;
+  padding: 8px 20px;
   border-radius: 24px;
   font-size: 14px;
   font-weight: 700;
@@ -266,31 +269,31 @@ body {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .stat-card {
   background: rgba(30, 41, 59, 0.6);
   backdrop-filter: blur(12px);
-  border-radius: 12px;
-  padding: 20px 16px;
+  border-radius: 10px;
+  padding: 14px 12px;
   text-align: center;
   border: 1px solid rgba(148, 163, 184, 0.1);
   transition: all 0.3s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
   border-color: rgba(96, 165, 250, 0.3);
 }
 
 .stat-value {
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 800;
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .stat-additions .stat-value {
@@ -320,15 +323,15 @@ body {
 .section-card {
   background: rgba(30, 41, 59, 0.6);
   backdrop-filter: blur(12px);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
+  border-radius: 12px;
+  padding: 16px 12px;
+  margin-bottom: 16px;
   border: 1px solid rgba(148, 163, 184, 0.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   margin-bottom: 16px;
   color: #e2e8f0;
@@ -338,7 +341,7 @@ body {
 }
 
 .title-icon {
-  font-size: 24px;
+  font-size: 20px;
   filter: drop-shadow(0 0 6px rgba(96, 165, 250, 0.4));
 }
 
@@ -349,13 +352,13 @@ body {
 .factors-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .factor-item {
   background: rgba(51, 65, 85, 0.4);
-  padding: 16px;
-  border-radius: 12px;
+  padding: 12px 10px;
+  border-radius: 10px;
   border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
@@ -363,17 +366,17 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .factor-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #cbd5e1;
 }
 
 .factor-value {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -410,7 +413,7 @@ body {
 }
 
 .factor-description {
-  font-size: 12px;
+  font-size: 11px;
   color: #94a3b8;
   margin: 0;
 }
@@ -427,14 +430,14 @@ body {
 
 .suggestion-card {
   background: rgba(51, 65, 85, 0.4);
-  border-radius: 12px;
-  padding: 16px;
-  border-left: 4px solid;
+  border-radius: 10px;
+  padding: 12px 10px;
+  border-left: 3px solid;
   transition: all 0.3s ease;
 }
 
 .suggestion-card:hover {
-  transform: translateX(4px);
+  transform: translateX(3px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -457,20 +460,20 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  gap: 12px;
+  margin-bottom: 10px;
+  gap: 10px;
 }
 
 .suggestion-category {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   color: #e2e8f0;
 }
 
 .severity-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 10px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.5px;
 }
@@ -494,12 +497,12 @@ body {
 }
 
 .suggestion-current {
-  font-size: 13px;
+  font-size: 12px;
   color: #94a3b8;
-  margin-bottom: 10px;
-  padding: 10px;
+  margin-bottom: 8px;
+  padding: 8px;
   background: rgba(30, 41, 59, 0.5);
-  border-radius: 8px;
+  border-radius: 6px;
   border-left: 3px solid rgba(239, 68, 68, 0.5);
 }
 
@@ -508,12 +511,12 @@ body {
 }
 
 .suggestion-text {
-  font-size: 14px;
+  font-size: 12px;
   color: #cbd5e1;
   line-height: 1.6;
-  padding: 10px;
+  padding: 8px;
   background: rgba(30, 41, 59, 0.5);
-  border-radius: 8px;
+  border-radius: 6px;
   border-left: 3px solid rgba(16, 185, 129, 0.5);
 }
 
