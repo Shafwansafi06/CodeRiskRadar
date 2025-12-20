@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { invoke } from '@forge/bridge';
 import './styles.css';
+import AIRemediation from './components/AIRemediation';
 
 function App() {
   const [data, setData] = useState(null);
@@ -46,12 +47,12 @@ function App() {
   // Calculate logical risk factors
   const calculateRiskFactors = () => {
     if (!data || !data.stats) return [];
-    
+
     const { additions = 0, deletions = 0, changedFiles: changed_files = 0 } = data.stats;
     const totalChanges = additions + deletions;
-    
+
     const factors = [];
-    
+
     // 1. Change Size Risk (0-100%)
     const sizeRisk = Math.min((totalChanges / 500) * 100, 100);
     factors.push({
@@ -60,7 +61,7 @@ function App() {
       description: totalChanges < 100 ? 'Small change' : totalChanges < 300 ? 'Medium change' : 'Large change',
       color: sizeRisk < 30 ? '#10b981' : sizeRisk < 60 ? '#f59e0b' : '#ef4444'
     });
-    
+
     // 2. File Complexity Risk (0-100%)
     const fileRisk = Math.min((changed_files / 20) * 100, 100);
     factors.push({
@@ -69,7 +70,7 @@ function App() {
       description: changed_files < 5 ? 'Focused change' : changed_files < 10 ? 'Moderate scope' : 'Wide scope',
       color: fileRisk < 30 ? '#10b981' : fileRisk < 60 ? '#f59e0b' : '#ef4444'
     });
-    
+
     // 3. Code Churn Risk (0-100%)
     const churnRisk = deletions > 0 ? Math.min((deletions / additions) * 100, 100) : 0;
     factors.push({
@@ -78,7 +79,7 @@ function App() {
       description: churnRisk < 30 ? 'Mostly additions' : churnRisk < 60 ? 'Balanced' : 'Heavy refactoring',
       color: churnRisk < 30 ? '#10b981' : churnRisk < 60 ? '#f59e0b' : '#ef4444'
     });
-    
+
     // 4. Documentation Quality (0-100%, inverse)
     const { title = '', body = '' } = data;
     const docScore = Math.min(((title.length + body.length) / 100) * 100, 100);
@@ -89,7 +90,7 @@ function App() {
       description: docRisk < 30 ? 'Well documented' : docRisk < 60 ? 'Needs detail' : 'Poorly documented',
       color: docRisk < 30 ? '#10b981' : docRisk < 60 ? '#f59e0b' : '#ef4444'
     });
-    
+
     return factors;
   };
 
@@ -132,7 +133,7 @@ function App() {
   const riskLevel = getRiskLevel(riskScore);
   const riskColor = getRiskColor(riskScore);
   const riskFactors = calculateRiskFactors();
-  
+
   const additions = data.stats?.additions || 0;
   const deletions = data.stats?.deletions || 0;
   const files = data.stats?.changedFiles || 0;
@@ -217,9 +218,9 @@ function App() {
                 </span>
               </div>
               <div className="factor-bar">
-                <div 
-                  className="factor-fill" 
-                  style={{ 
+                <div
+                  className="factor-fill"
+                  style={{
                     width: `${factor.value}%`,
                     background: `linear-gradient(90deg, ${factor.color}, ${factor.color}dd)`
                   }}
@@ -231,46 +232,26 @@ function App() {
         </div>
       </div>
 
-      {/* AI Suggestions */}
-      {data.suggestions && data.suggestions.length > 0 && (
+      {/* AI-Powered Remediation - Always show */}
+      {riskScore >= 0 && (
         <div className="section-card">
           <h3 className="section-title">
-            <span className="title-icon">💡</span>
-            AI Suggestions ({data.suggestions.length})
+            <span className="title-icon">🏎️</span>
+            AI Pit Crew Recommendations
           </h3>
-          <div className="suggestions-list">
-            {data.suggestions.map((suggestion, index) => (
-              <div 
-                key={index} 
-                className={`suggestion-card severity-${suggestion.severity?.toLowerCase() || 'medium'}`}
-              >
-                <div className="suggestion-header">
-                  <div className="suggestion-category">
-                    {suggestion.category || 'Improvement'}
-                  </div>
-                  <span className={`severity-badge badge-${suggestion.severity?.toLowerCase() || 'medium'}`}>
-                    {suggestion.severity || 'MEDIUM'}
-                  </span>
-                </div>
-                
-                {suggestion.current && (
-                  <div className="suggestion-current">
-                    <strong>Current:</strong> {suggestion.current}
-                  </div>
-                )}
-                
-                <div className="suggestion-text">
-                  <strong>Suggestion:</strong> {suggestion.suggestion}
-                </div>
-                
-                {suggestion.reference && (
-                  <div className="suggestion-reference">
-                    📚 Reference: {suggestion.reference}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          <AIRemediation
+            prData={{
+              prId: data.prId,
+              title: data.prTitle,
+              filesChanged: data.filesChanged,
+              additions: data.stats?.additions,
+              deletions: data.stats?.deletions
+            }}
+            riskAnalysis={{
+              risk_score: riskPercent,
+              risk_factors: data.risk_factors || []
+            }}
+          />
         </div>
       )}
 
@@ -307,7 +288,7 @@ function App() {
       {/* Footer */}
       <div className="footer">
         <span className="model-info">
-          {data.ml_analysis?.ml_model || 'baseline'} • 
+          {data.ml_analysis?.ml_model || 'baseline'} •
           {data.ml_analysis?.data_source || 'statistical'}
         </span>
       </div>

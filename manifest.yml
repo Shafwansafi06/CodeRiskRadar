@@ -9,6 +9,11 @@ permissions:
     - read:repository:bitbucket
     - write:pullrequest:bitbucket
     - storage:app
+  external:
+    fetch:
+      backend:
+        - address: generativelanguage.googleapis.com
+        - address: nztdwsnmttwwjticuphi.supabase.co
 
 modules:
   function:
@@ -22,6 +27,12 @@ modules:
       handler: rovo/prQualityAgent.handler
     - key: loadSeedData
       handler: bridge/loadSeedData.loadSeedDataHandler
+    # Feature 1: AI-Powered Remediation
+    - key: getAIRemediation
+      handler: bridge/getRiskAnalysis.handler
+    # Feature 2: Team Health Dashboard
+    - key: getTeamDashboard
+      handler: bridge/getTeamDashboard.handler
 
   bitbucket:repoPullRequestCard:
     - key: pr-risk-panel

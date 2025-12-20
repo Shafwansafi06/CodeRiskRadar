@@ -2,19 +2,24 @@ import Resolver from '@forge/resolver';
 import { storage } from '@forge/api';
 import api, { route } from '@forge/api';
 import mlService from '../services/mlService_v3.js';
+import teamMetricsService from '../services/teamMetricsService.js';
+import geminiService from '../services/geminiService.js';
 
 const resolver = new Resolver();
 
+/**
+ * MAIN RISK ANALYSIS HANDLER
+ */
 resolver.define('getRiskAnalysis', async (req) => {
   const { context } = req;
-  
+
   console.log('=== Risk Analysis Started ===');
   console.log('Context:', JSON.stringify(context, null, 2));
 
   try {
     // Extract Bitbucket PR information
     const prInfo = extractBitbucketPR(context);
-    
+
     if (!prInfo) {
       console.error('❌ Could not extract PR info from context');
       return getDefaultResponse('Unable to extract PR information');
@@ -24,17 +29,12 @@ resolver.define('getRiskAnalysis', async (req) => {
 
     // CACHE DISABLED FOR TESTING - ALWAYS FETCH FRESH DATA
     const cacheKey = `risk_v2_${prInfo.workspace}_${prInfo.repo}_${prInfo.prId}`;
-    // const cached = await storage.get(cacheKey);
-    // if (cached && (Date.now() - cached.timestamp < 300000)) {
-    //   console.log('📦 Returning cached data');
-    //   return cached.data;
-    // }
 
     console.log('🔄 Fetching fresh data (cache disabled)...');
-    
+
     // Fetch PR details from Bitbucket API
     const prDetails = await fetchBitbucketPR(prInfo);
-    
+
     if (!prDetails) {
       console.error('❌ Could not fetch PR from Bitbucket');
       return getDefaultResponse('Unable to fetch PR details');
@@ -55,7 +55,7 @@ resolver.define('getRiskAnalysis', async (req) => {
       changed_files: prDetails.changed_files,
       title: prDetails.title
     });
-    
+
     const prData = {
       id: `bitbucket-${prInfo.prId}`,
       title: prDetails.title,
@@ -64,10 +64,10 @@ resolver.define('getRiskAnalysis', async (req) => {
       deletions: prDetails.deletions,
       changed_files: prDetails.changed_files,
     };
-    
+
     // Use new ML service with vector embeddings
     const riskAnalysis = await mlService.calculateMLRiskScore(prData);
-    
+
     console.log('✅ ML Risk Analysis:', {
       score: riskAnalysis.risk_score,
       model: riskAnalysis.ml_model,
@@ -76,16 +76,16 @@ resolver.define('getRiskAnalysis', async (req) => {
 
     // Get file risks
     let filesChanged = prDetails.files || [];
-    
+
     // Get PR improvement suggestions using ML
     const suggestions = await mlService.getPRImprovementSuggestions(prData);
-    
+
     console.log('💡 Generated', suggestions.length, 'improvement suggestions');
 
     // Find similar PRs using cosine similarity
     const prText = `${prDetails.title} ${prDetails.description || ''}`;
     const similarPRs = await mlService.findSimilarPRs(prText, 5);
-    
+
     console.log('🔍 Found', similarPRs.length, 'similar PRs');
 
     const result = {
@@ -130,22 +130,71 @@ resolver.define('getRiskAnalysis', async (req) => {
       version: '2.0-fresh-data',
     };
 
-    // Cache result (disabled for testing)
-    // await storage.set(cacheKey, {
-    //   data: result,
-    //   timestamp: Date.now(),
-    // });
-
     console.log('✨ Analysis Complete!');
     console.log('📊 Final Risk Score:', result.risk_score);
     console.log('📁 Files Changed:', result.filesChanged.map(f => `${f.filename} (${f.changes} changes, risk: ${f.risk_score})`));
-    
+
+    // Record metrics for team dashboard
+    await teamMetricsService.recordPRMetric(
+      {
+        prId: prInfo.prId,
+        title: prDetails.title,
+        author: prDetails.author,
+        filesChanged: filesChanged.map(f => f.path || f.filename),
+        additions: prDetails.additions,
+        deletions: prDetails.deletions
+      },
+      {
+        risk_score: Math.round(riskAnalysis.risk_score * 100)
+      }
+    );
+
     return result;
 
   } catch (error) {
     console.error('❌ Error in getRiskAnalysis:', error);
     console.error('Stack:', error.stack);
     return getDefaultResponse('Error analyzing PR: ' + error.message);
+  }
+});
+
+/**
+ * GEMINI AI REMEDIATION HANDLER
+ */
+resolver.define('getAIRemediation', async (req) => {
+  const { payload } = req;
+  const { prData, riskAnalysis } = payload;
+
+  console.log('🔧 AI Remediation requested for PR:', prData.prId);
+
+  try {
+    // Check cache first (avoid redundant API calls)
+    const cacheKey = `ai_remediation_${prData.prId}`;
+    const cached = await storage.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < 3600000) {
+      console.log('✅ Returning cached AI suggestions');
+      return cached.data;
+    }
+
+    // Generate fresh suggestions
+    const result = await geminiService.generateRemediations(prData, riskAnalysis);
+
+    // Cache for 1 hour
+    await storage.set(cacheKey, {
+      data: result,
+      timestamp: Date.now()
+    });
+
+    return result;
+
+  } catch (error) {
+    console.error('❌ Error generating AI remediation:', error);
+    return {
+      success: false,
+      error: error.message,
+      suggestions: []
+    };
   }
 });
 
@@ -161,17 +210,15 @@ function extractBitbucketPR(context) {
 
     const { pullRequest, repository } = context.extension;
     const installContext = context.installContext;
-    
+
     if (!pullRequest || !repository || !installContext) {
       console.error('Missing PR, repo, or installContext');
       return null;
     }
 
-    // Parse installContext: "ari:cloud:bitbucket::workspace/d98a2145-0d05-4089-b50c-dce5e0bed43e"
-    // This gives us the workspace UUID
     const workspaceMatch = installContext.match(/workspace\/([^\/]+)/);
     const workspaceUuid = workspaceMatch ? workspaceMatch[1] : null;
-    
+
     const repoUuid = repository.uuid.replace(/[{}]/g, '');
 
     console.log('📍 Extracted info:', {
@@ -199,73 +246,46 @@ function extractBitbucketPR(context) {
 
 /**
  * Fetch PR details from Bitbucket API using Forge
- * Uses UUIDs directly as per Bitbucket Forge API documentation
  */
 async function fetchBitbucketPR(prInfo) {
   try {
     console.log('🔍 Fetching PR details using UUIDs...');
-    console.log('PR Info:', {
-      workspaceUuid: prInfo.workspaceUuid,
-      repoUuid: prInfo.repoUuid,
-      prId: prInfo.prId
-    });
-    
-    // Use UUIDs directly in the API path as per Bitbucket documentation
-    // Format: /2.0/repositories/{workspace_uuid}/{repo_uuid}/pullrequests/{pr_id}
-    // UUIDs must include curly braces
+
     const workspaceUuidWithBraces = `{${prInfo.workspaceUuid}}`;
     const repoUuidWithBraces = `{${prInfo.repoUuid}}`;
-    
+
     const prUrl = route`/2.0/repositories/${workspaceUuidWithBraces}/${repoUuidWithBraces}/pullrequests/${prInfo.prId}`;
     const diffstatUrl = route`/2.0/repositories/${workspaceUuidWithBraces}/${repoUuidWithBraces}/pullrequests/${prInfo.prId}/diffstat`;
-    
-    console.log('🔍 Fetching PR with UUIDs:', {
-      workspace: workspaceUuidWithBraces,
-      repo: repoUuidWithBraces,
-      pr: prInfo.prId
-    });
-    
+
     // Use asApp() for app-level authentication
     const prResponse = await api.asApp().requestBitbucket(prUrl);
-    
+
     if (prResponse.status !== 200) {
       const error = await prResponse.text();
       console.error('PR fetch failed:', prResponse.status, error);
       return null;
     }
-    
+
     const prData = await prResponse.json();
-    console.log('✅ PR fetched successfully:', {
-      title: prData.title,
-      state: prData.state,
-      author: prData.author?.display_name
-    });
-    
+
     // Fetch diffstat for file changes
     let files = [];
     let additions = 0;
     let deletions = 0;
-    
+
     try {
       console.log('🔍 Fetching diffstat...');
       const diffResponse = await api.asApp().requestBitbucket(diffstatUrl);
-      
+
       if (diffResponse.status === 200) {
         const diffData = await diffResponse.json();
         files = diffData.values || [];
-        
-        // Calculate totals
+
         files.forEach(f => {
           additions += f.lines_added || 0;
           deletions += f.lines_removed || 0;
         });
-        
-        console.log('✅ Diffstat fetched successfully:', {
-          filesCount: files.length,
-          additions,
-          deletions,
-          files: files.map(f => f.path || f.filename).join(', ')
-        });
+
       } else {
         const error = await diffResponse.text();
         console.error('Diffstat fetch failed:', diffResponse.status, error);
@@ -284,7 +304,7 @@ async function fetchBitbucketPR(prInfo) {
       author: prData.author?.display_name || 'Unknown',
       state: prData.state,
     };
-    
+
   } catch (error) {
     console.error('Error fetching Bitbucket PR:', error);
     return null;
@@ -297,20 +317,19 @@ async function fetchBitbucketPR(prInfo) {
 function calculateFileRisk(file) {
   const totalChanges = (file.lines_added || 0) + (file.lines_removed || 0);
   const changeScore = Math.min(totalChanges / 100, 1);
-  
+
   const path = file.path || file.filename || '';
   const criticalPatterns = ['auth', 'security', 'password', 'token', 'api', 'config', 'database', 'payment'];
   const isCritical = criticalPatterns.some(p => path.toLowerCase().includes(p));
-  
-  // README, docs, and test files are low risk
+
   if (path.match(/readme|\.md$|\.txt$|docs?\//i)) {
     return Math.min(changeScore * 0.2, 0.3);
   }
-  
+
   if (path.match(/test|spec|__tests__/i)) {
     return Math.min(changeScore * 0.4, 0.5);
   }
-  
+
   return Math.min(changeScore * (isCritical ? 1.2 : 0.8), 1);
 }
 

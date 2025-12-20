@@ -1,4 +1,4 @@
-# 🎯 PitStop AI — PR Risk Analysis (Concise)
+# 🎯 PitStop AI — PR Risk Analysis
 
 PitStop AI analyzes Bitbucket pull requests and returns an explainable risk score,
 improvement suggestions, and similar historical PR examples. All processing runs

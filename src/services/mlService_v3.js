@@ -35,13 +35,13 @@ async function loadSeedQualityPRs() {
       console.log('⚠️  No seed data in storage. Use baseline analysis.');
       return [];
     }
-    
+
     const allPRs = [];
     for (let i = 1; i <= chunkCount; i++) {
       const chunk = await storage.get(`seed_quality_prs_${i}`) || [];
       allPRs.push(...chunk);
     }
-    
+
     console.log(`✅ Loaded ${allPRs.length} seed quality PRs`);
     return allPRs;
   } catch (error) {
@@ -114,11 +114,11 @@ async function storeTeamPR(prData) {
       ...prData,
       analyzed_at: Date.now()
     });
-    
+
     // Keep last 500 team PRs
     const trimmed = teamPRs.slice(-500);
     await storage.set('team_prs', trimmed);
-    
+
     console.log(`✅ Stored team PR (total: ${trimmed.length})`);
   } catch (error) {
     console.error('Error storing team PR:', error);
@@ -147,7 +147,7 @@ function generateTFIDFVector(text) {
   const words = text.toLowerCase().match(/\b\w{3,}\b/g) || [];
   const freq = {};
   words.forEach(w => freq[w] = (freq[w] || 0) + 1);
-  
+
   // Create 256-dim vector (smaller for performance)
   const vector = new Array(256).fill(0);
   Object.keys(freq).forEach(word => {
@@ -155,7 +155,7 @@ function generateTFIDFVector(text) {
     const idx = hash % 256;
     vector[idx] += freq[word] / words.length;
   });
-  
+
   // Normalize
   const norm = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
   return vector.map(v => v / (norm || 1));
@@ -166,12 +166,12 @@ function generateTFIDFVector(text) {
  */
 function cosineSimilarity(vec1, vec2) {
   if (!vec1 || !vec2 || vec1.length !== vec2.length) return 0;
-  
+
   let dotProduct = 0;
   for (let i = 0; i < vec1.length; i++) {
     dotProduct += vec1[i] * vec2[i];
   }
-  
+
   return Math.max(0, Math.min(1, dotProduct));
 }
 
@@ -181,46 +181,46 @@ function cosineSimilarity(vec1, vec2) {
 async function findSimilarPRs(prText, limit = 10) {
   try {
     console.log('🔍 Finding similar PRs...');
-    
+
     // Generate vector for current PR
     const currentVector = generateTFIDFVector(prText);
-    
+
     // Load seed PRs
     const seedQualityPRs = await loadSeedQualityPRs();
     const seedRiskyPRs = await loadSeedRiskyPRs();
     const teamPRs = await getTeamPRs();
-    
+
     // Combine all PRs
     const allPRs = [
       ...seedQualityPRs.map(pr => ({ ...pr, source: 'seed_quality' })),
       ...seedRiskyPRs.map(pr => ({ ...pr, source: 'seed_risky' })),
       ...teamPRs.map(pr => ({ ...pr, source: 'team' }))
     ];
-    
+
     console.log(`📊 Analyzing against ${allPRs.length} PRs`);
-    
+
     // Calculate similarity for each
     const withSimilarity = allPRs.map(pr => {
       const prText = `${pr.title || ''} ${pr.body || ''}`;
       const prVector = generateTFIDFVector(prText);
       const similarity = cosineSimilarity(currentVector, prVector);
-      
+
       return {
         ...pr,
         similarity
       };
     });
-    
+
     // Sort by similarity and return top matches
     const topMatches = withSimilarity
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, limit);
-    
+
     console.log(`✅ Found ${topMatches.length} similar PRs`);
     console.log(`   Top match: ${topMatches[0]?.similarity.toFixed(2)} similarity`);
-    
+
     return topMatches;
-    
+
   } catch (error) {
     console.error('Error finding similar PRs:', error);
     return [];
@@ -237,77 +237,77 @@ async function findSimilarPRs(prText, limit = 10) {
 export async function calculateMLRiskScore(prData) {
   try {
     console.log('🧠 Calculating ML risk score with hybrid data...');
-    
+
     const { title, body, additions, deletions, changed_files } = prData;
     const prText = `${title || ''} ${body || ''}`;
     const totalChanges = (additions || 0) + (deletions || 0);
-    
+
     // Store for team learning
     await storeTeamPR(prData);
-    
+
     // 1. Find similar PRs
     const similarPRs = await findSimilarPRs(prText, 20);
-    
+
     if (similarPRs.length === 0) {
       console.log('⚠️  No similar PRs found, using baseline');
       return calculateBaselineRisk(prData);
     }
-    
+
     // 2. Separate quality vs risky
-    const qualityPRs = similarPRs.filter(pr => 
+    const qualityPRs = similarPRs.filter(pr =>
       pr.source === 'seed_quality' ||
       (pr.quality_score && pr.quality_score > 0.6)
     );
-    
+
     const riskyPRs = similarPRs.filter(pr =>
       pr.source === 'seed_risky' ||
       (pr.quality_score && pr.quality_score < 0.4)
     );
-    
+
     console.log(`📊 Analysis: ${qualityPRs.length} quality, ${riskyPRs.length} risky`);
-    
+
     // 3. Calculate similarity-weighted risk
     let riskScore = 0.5; // Start neutral
-    
+
     // Similar to quality PRs → Lower risk
     if (qualityPRs.length > 0) {
       const avgQualitySim = qualityPRs.reduce((sum, pr) => sum + pr.similarity, 0) / qualityPRs.length;
       riskScore -= avgQualitySim * 0.3;
       console.log(`   ✅ Quality similarity: ${avgQualitySim.toFixed(2)} → -${(avgQualitySim * 0.3).toFixed(2)} risk`);
     }
-    
+
     // Similar to risky PRs → Higher risk
     if (riskyPRs.length > 0) {
       const avgRiskySim = riskyPRs.reduce((sum, pr) => sum + pr.similarity, 0) / riskyPRs.length;
       riskScore += avgRiskySim * 0.3;
       console.log(`   ⚠️  Risky similarity: ${avgRiskySim.toFixed(2)} → +${(avgRiskySim * 0.3).toFixed(2)} risk`);
     }
-    
+
     // 4. Compare against industry benchmarks
     const seedStats = await getSeedStats();
-    
+
     const sizeRatio = totalChanges / seedStats.avg_additions;
     const filesRatio = (changed_files || 0) / seedStats.avg_files;
     const titleRatio = (title?.length || 0) / seedStats.avg_title_length;
-    
+
     // Adjust risk based on benchmarks
     if (sizeRatio > 2) riskScore += 0.2; // Much larger than avg
     if (filesRatio > 2) riskScore += 0.15; // Many more files
     if (titleRatio < 0.5) riskScore += 0.1; // Short title
-    
+
     console.log(`   📏 Benchmark ratios: size=${sizeRatio.toFixed(1)}x, files=${filesRatio.toFixed(1)}x, title=${titleRatio.toFixed(1)}x`);
-    
-    // 5. Final adjustments based on current PR
-    const sizeScore = Math.min(totalChanges / 1000, 0.3);
-    const filesScore = Math.min((changed_files || 0) / 50, 0.2);
-    
+
+    // 5. Final adjustments based on current PR (increased weights for better responsiveness)
+    const sizeScore = Math.min(totalChanges / 500, 0.4); // Increased from 0.3
+    const filesScore = Math.min((changed_files || 0) / 20, 0.3); // Increased from 0.2
+
     riskScore += sizeScore + filesScore;
-    
+
     // Clamp between 0 and 1
     riskScore = Math.max(0, Math.min(1, riskScore));
-    
+
     console.log(`✅ Final risk score: ${(riskScore * 100).toFixed(0)}%`);
-    
+
     return {
       risk_score: riskScore,
       factors: {
@@ -330,7 +330,7 @@ export async function calculateMLRiskScore(prData) {
       data_source: 'team_learning_plus_baseline',
       team_prs_analyzed: (await getTeamPRs()).length
     };
-    
+
   } catch (error) {
     console.error('ML risk calculation failed:', error);
     return calculateBaselineRisk(prData);
@@ -343,12 +343,12 @@ export async function calculateMLRiskScore(prData) {
 function calculateBaselineRisk(prData) {
   const { additions, deletions, changed_files, title, body } = prData;
   const totalChanges = (additions || 0) + (deletions || 0);
-  
+
   const sizeRisk = Math.min(totalChanges / 500, 1) * 0.4;
   const filesRisk = Math.min((changed_files || 0) / 20, 1) * 0.3;
   const titleRisk = (!title || title.length < 10) ? 0.2 : 0;
   const bodyRisk = (!body || body.length < 20) ? 0.1 : 0;
-  
+
   return {
     risk_score: sizeRisk + filesRisk + titleRisk + bodyRisk,
     factors: {
@@ -373,16 +373,16 @@ export async function getPRImprovementSuggestions(prData) {
   try {
     const { title, body, additions, deletions, changed_files, filesChanged } = prData;
     const totalChanges = (additions || 0) + (deletions || 0);
-    
+
     const suggestions = [];
     const seedStats = await getSeedStats();
-    
+
     // Find similar quality PRs first for contextual examples
     const prText = `${title || ''} ${body || ''}`;
     const similar = await findSimilarPRs(prText, 10);
     const qualityExamples = similar.filter(pr => pr.source === 'seed_quality').slice(0, 3);
     const riskyExamples = similar.filter(pr => pr.source === 'seed_risky').slice(0, 2);
-    
+
     // 1. Title Quality - Be specific about improvements
     if (!title || title.length < 20) {
       const goodTitleExample = qualityExamples.find(pr => pr.title && pr.title.length > 30);
@@ -391,7 +391,7 @@ export async function getPRImprovementSuggestions(prData) {
         severity: 'high',
         icon: '🔴',
         current: `Title too short: "${title || 'No title'}" (${title?.length || 0} chars)`,
-        suggestion: goodTitleExample 
+        suggestion: goodTitleExample
           ? `Make it descriptive like "${goodTitleExample.title}" (${goodTitleExample.title.length} chars). Include: what changed, why, and the impact.`
           : `Expand to ${seedStats.avg_title_length}+ chars. Include: [Type] Component: What changed and why. Example: "feat(api): Add rate limiting to prevent abuse"`,
         action: '✏️ Rewrite title to be more descriptive',
@@ -410,7 +410,7 @@ export async function getPRImprovementSuggestions(prData) {
         reference: 'best_practice'
       });
     }
-    
+
     // 2. Description Quality - Provide template
     if (!body || body.length < 50) {
       const goodDescExample = qualityExamples.find(pr => pr.body && pr.body.length > 100);
@@ -427,7 +427,7 @@ export async function getPRImprovementSuggestions(prData) {
   
 ## Screenshots/Logs
   [If UI/output changed]`;
-      
+
       suggestions.push({
         category: '📋 Description',
         severity: 'high',
@@ -452,7 +452,7 @@ export async function getPRImprovementSuggestions(prData) {
         reference: 'quality_pattern'
       });
     }
-    
+
     // 3. PR Size - Specific splitting recommendations
     if (totalChanges > seedStats.avg_additions * 3) {
       const fileTypes = new Set();
@@ -466,11 +466,11 @@ export async function getPRImprovementSuggestions(prData) {
           }
         });
       }
-      
-      const splitSuggestion = fileTypes.size > 1 
+
+      const splitSuggestion = fileTypes.size > 1
         ? `Split into ${fileTypes.size} PRs: ${Array.from(fileTypes).join(', ')}`
         : 'Break into smaller, atomic changes (one concern per PR)';
-      
+
       suggestions.push({
         category: '📏 PR Size',
         severity: 'high',
@@ -493,7 +493,7 @@ export async function getPRImprovementSuggestions(prData) {
         reference: 'best_practice'
       });
     }
-    
+
     // 4. File Count - Identify unrelated changes
     if ((changed_files || 0) > seedStats.avg_files * 2) {
       suggestions.push({
@@ -507,7 +507,7 @@ export async function getPRImprovementSuggestions(prData) {
         reference: 'solid_principles'
       });
     }
-    
+
     // 5. Risk Patterns - From similar risky PRs
     if (riskyExamples.length > 0) {
       const commonIssue = riskyExamples[0];
@@ -522,7 +522,7 @@ export async function getPRImprovementSuggestions(prData) {
         reference: commonIssue.doc_id || 'risk_database'
       });
     }
-    
+
     // 6. Best Practice Example - From similar quality PRs
     if (qualityExamples.length > 0) {
       const bestExample = qualityExamples[0];
@@ -537,15 +537,15 @@ export async function getPRImprovementSuggestions(prData) {
         reference: `${bestExample.organization}/${bestExample.doc_id || 'quality_pr'}`
       });
     }
-    
+
     // 7. Testing Reminder
     const hasTestKeywords = body && (
-      body.toLowerCase().includes('test') || 
+      body.toLowerCase().includes('test') ||
       body.toLowerCase().includes('coverage') ||
       body.toLowerCase().includes('unit') ||
       body.toLowerCase().includes('integration')
     );
-    
+
     if (!hasTestKeywords && totalChanges > 50) {
       suggestions.push({
         category: '🧪 Testing',
@@ -561,13 +561,13 @@ export async function getPRImprovementSuggestions(prData) {
         reference: 'testing_best_practice'
       });
     }
-    
+
     // Sort by severity
     const severityOrder = { high: 0, medium: 1, low: 2, info: 3 };
     suggestions.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
-    
+
     return suggestions;
-    
+
   } catch (error) {
     console.error('Error generating suggestions:', error);
     return [];
