@@ -58,9 +58,12 @@ export async function generateRemediations(prData, riskAnalysis) {
 
     console.log(`📡 Calling Gemini API via ObservAI...`);
 
+    const modelName = 'gemini-2.0-flash-exp';
+    console.log(`--- DEBUG: USING MODEL: ${modelName} ---`);
+
     // ObservAI wrapper call
     const result = await client.generateContent(
-      'gemini-1.5-flash', // Revert to stable model - 2.5 is failing
+      modelName, // Updated and logged for diagnostics
       prompt,
       {
         metadata: {

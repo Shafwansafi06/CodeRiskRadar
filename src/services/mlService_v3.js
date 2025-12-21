@@ -20,30 +20,22 @@
  */
 
 import { storage } from '@forge/api';
+import * as supabaseService from './supabaseService.js';
 
 // ============================================================================
-// SEED DATA ACCESS
+// SEED DATA ACCESS (Now via Supabase)
 // ============================================================================
 
 /**
- * Load all seed quality PRs (from Forge storage - loaded via loadSeedData bridge)
+ * Load all seed quality PRs from Supabase
  */
-async function loadSeedQualityPRs() {
+async function loadSeedQualityPRs(metrics) {
   try {
-    const chunkCount = await storage.get('seed_quality_prs_count') || 0;
-    if (chunkCount === 0) {
-      console.log('⚠️  No seed data in storage. Use baseline analysis.');
-      return [];
-    }
-
-    const allPRs = [];
-    for (let i = 1; i <= chunkCount; i++) {
-      const chunk = await storage.get(`seed_quality_prs_${i}`) || [];
-      allPRs.push(...chunk);
-    }
-
-    console.log(`✅ Loaded ${allPRs.length} seed quality PRs`);
-    return allPRs;
+    const prs = await supabaseService.getBenchmarkPRs(metrics, 30);
+    return prs.map(pr => ({
+      ...pr,
+      quality_score: 0.9 // High quality markers from benchmark
+    }));
   } catch (error) {
     console.error('Error loading seed PRs:', error);
     return [];
@@ -51,13 +43,15 @@ async function loadSeedQualityPRs() {
 }
 
 /**
- * Load seed risky PRs
+ * Load seed risky PRs from Supabase
  */
 async function loadSeedRiskyPRs() {
   try {
-    const riskyPRs = await storage.get('seed_risky_prs') || [];
-    console.log(`✅ Loaded ${riskyPRs.length} seed risky PRs`);
-    return riskyPRs;
+    const prs = await supabaseService.getRiskyPatterns(10);
+    return prs.map(pr => ({
+      ...pr,
+      quality_score: 0.2 // Known risky markers
+    }));
   } catch (error) {
     console.error('Error loading risky PRs:', error);
     return [];
@@ -65,39 +59,22 @@ async function loadSeedRiskyPRs() {
 }
 
 /**
- * Load seed embeddings
+ * Load seed embeddings (Not used for now, using text similarity)
  */
 async function loadSeedEmbeddings() {
-  try {
-    const embeddings = await storage.get('seed_embeddings') || [];
-    console.log(`✅ Loaded ${embeddings.length} seed embeddings`);
-    return embeddings;
-  } catch (error) {
-    console.error('Error loading embeddings:', error);
-    return [];
-  }
+  return [];
 }
 
 /**
  * Get seed statistics (industry benchmarks)
  */
 async function getSeedStats() {
-  try {
-    const metadata = await storage.get('seed_metadata') || {};
-    return metadata.stats || {
-      avg_additions: 150,
-      avg_deletions: 50,
-      avg_files: 8,
-      avg_title_length: 35
-    };
-  } catch (error) {
-    return {
-      avg_additions: 150,
-      avg_deletions: 50,
-      avg_files: 8,
-      avg_title_length: 35
-    };
-  }
+  return {
+    avg_additions: 150,
+    avg_deletions: 50,
+    avg_files: 8,
+    avg_title_length: 35
+  };
 }
 
 // ============================================================================
@@ -178,15 +155,16 @@ function cosineSimilarity(vec1, vec2) {
 /**
  * Find similar PRs using text similarity
  */
-async function findSimilarPRs(prText, limit = 10) {
+async function findSimilarPRs(prData, limit = 10) {
   try {
+    const prText = `${prData.title || ''} ${prData.body || ''}`;
     console.log('🔍 Finding similar PRs...');
 
     // Generate vector for current PR
     const currentVector = generateTFIDFVector(prText);
 
-    // Load seed PRs
-    const seedQualityPRs = await loadSeedQualityPRs();
+    // Load seed PRs (Passing metrics for Supabase filtering)
+    const seedQualityPRs = await loadSeedQualityPRs(prData);
     const seedRiskyPRs = await loadSeedRiskyPRs();
     const teamPRs = await getTeamPRs();
 
@@ -246,7 +224,7 @@ export async function calculateMLRiskScore(prData) {
     await storeTeamPR(prData);
 
     // 1. Find similar PRs
-    const similarPRs = await findSimilarPRs(prText, 20);
+    const similarPRs = await findSimilarPRs(prData, 20);
 
     if (similarPRs.length === 0) {
       console.log('⚠️  No similar PRs found, using baseline');
@@ -267,19 +245,33 @@ export async function calculateMLRiskScore(prData) {
     console.log(`📊 Analysis: ${qualityPRs.length} quality, ${riskyPRs.length} risky`);
 
     // 3. Calculate similarity-weighted risk
-    let riskScore = 0.5; // Start neutral
+    // DYNAMIC BASELINE: Adjust starting risk based on scale (don't penalize small PRs)
+    let riskScore = 0.3;
+    if (totalChanges < 50) riskScore = 0.15;
+    if (totalChanges < 5) riskScore = 0.05;
+
+    const files = prData.files || [];
+    const isDocOnly = files.length > 0 && files.every(f => {
+      const path = f.path || f.filename || '';
+      return path.match(/readme|\.md$|\.txt$|docs?\//i);
+    });
+
+    if (isDocOnly) {
+      console.log('📄 PR detected as DOCUMENTATION ONLY (Discount applied)');
+      riskScore *= 0.2; // 80% discount for docs
+    }
 
     // Similar to quality PRs → Lower risk
     if (qualityPRs.length > 0) {
       const avgQualitySim = qualityPRs.reduce((sum, pr) => sum + pr.similarity, 0) / qualityPRs.length;
-      riskScore -= avgQualitySim * 0.3;
+      riskScore -= avgQualitySim * (isDocOnly ? 0.1 : 0.3);
       console.log(`   ✅ Quality similarity: ${avgQualitySim.toFixed(2)} → -${(avgQualitySim * 0.3).toFixed(2)} risk`);
     }
 
-    // Similar to risky PRs → Higher risk
+    // Similar to risky PRs → Higher risk (less weight for doc PRs)
     if (riskyPRs.length > 0) {
       const avgRiskySim = riskyPRs.reduce((sum, pr) => sum + pr.similarity, 0) / riskyPRs.length;
-      riskScore += avgRiskySim * 0.3;
+      riskScore += avgRiskySim * (isDocOnly ? 0.05 : 0.3);
       console.log(`   ⚠️  Risky similarity: ${avgRiskySim.toFixed(2)} → +${(avgRiskySim * 0.3).toFixed(2)} risk`);
     }
 
@@ -290,21 +282,35 @@ export async function calculateMLRiskScore(prData) {
     const filesRatio = (changed_files || 0) / seedStats.avg_files;
     const titleRatio = (title?.length || 0) / seedStats.avg_title_length;
 
-    // Adjust risk based on benchmarks
-    if (sizeRatio > 2) riskScore += 0.2; // Much larger than avg
-    if (filesRatio > 2) riskScore += 0.15; // Many more files
-    if (titleRatio < 0.5) riskScore += 0.1; // Short title
+    // Adjust risk based on benchmarks (lower weights for doc-only)
+    const weightFactor = isDocOnly ? 0.2 : 1;
+    if (sizeRatio > 2) riskScore += 0.2 * weightFactor;
+    if (filesRatio > 2) riskScore += 0.15 * weightFactor;
+    if (titleRatio < 0.5) riskScore += 0.1 * weightFactor;
 
     console.log(`   📏 Benchmark ratios: size=${sizeRatio.toFixed(1)}x, files=${filesRatio.toFixed(1)}x, title=${titleRatio.toFixed(1)}x`);
 
-    // 5. Final adjustments based on current PR (increased weights for better responsiveness)
-    const sizeScore = Math.min(totalChanges / 500, 0.4); // Increased from 0.3
-    const filesScore = Math.min((changed_files || 0) / 20, 0.3); // Increased from 0.2
+    // 5. Final adjustments based on current PR
+    const sizeScore = Math.min(totalChanges / 500, 0.4) * weightFactor;
+    const filesScore = Math.min((changed_files || 0) / 20, 0.3) * weightFactor;
 
     riskScore += sizeScore + filesScore;
 
-    // Clamp between 0 and 1
-    riskScore = Math.max(0, Math.min(1, riskScore));
+    // 6. HARD FLOORS: Apply critical structural protection at the very end
+    const isNetDeletion = additions === 0 && deletions > 0;
+    const hasCriticalFiles = files.some(f => {
+      const path = (f.path || f.filename || '').toLowerCase();
+      return path.includes('auth') || path.includes('login') || path.includes('api') ||
+        path.includes('security') || path.includes('config') || path.includes('db');
+    });
+
+    if (isNetDeletion && hasCriticalFiles) {
+      console.log('🚨 CRITICAL STRUCTURAL RISK: Net deletion in critical file! (Enforcing 65% Floor)');
+      riskScore = Math.max(riskScore, 0.65);
+    }
+
+    // Clamp between 0.01 and 1
+    riskScore = Math.max(0.01, Math.min(1, riskScore));
 
     console.log(`✅ Final risk score: ${(riskScore * 100).toFixed(0)}%`);
 
@@ -378,8 +384,7 @@ export async function getPRImprovementSuggestions(prData) {
     const seedStats = await getSeedStats();
 
     // Find similar quality PRs first for contextual examples
-    const prText = `${title || ''} ${body || ''}`;
-    const similar = await findSimilarPRs(prText, 10);
+    const similar = await findSimilarPRs(prData, 10);
     const qualityExamples = similar.filter(pr => pr.source === 'seed_quality').slice(0, 3);
     const riskyExamples = similar.filter(pr => pr.source === 'seed_risky').slice(0, 2);
 

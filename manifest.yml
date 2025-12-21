@@ -13,6 +13,7 @@ permissions:
     fetch:
       backend:
         - address: generativelanguage.googleapis.com
+        - address: gbesjxveinhjnfnlushe.supabase.co
         - address: nztdwsnmttwwjticuphi.supabase.co
 
 modules:
@@ -29,7 +30,7 @@ modules:
       handler: bridge/loadSeedData.loadSeedDataHandler
     # Feature 1: AI-Powered Remediation
     - key: getAIRemediation
-      handler: bridge/getRiskAnalysis.handler
+      handler: bridge/getAIRemediation.handler
     # Feature 2: Team Health Dashboard
     - key: getTeamDashboard
       handler: bridge/getTeamDashboard.handler

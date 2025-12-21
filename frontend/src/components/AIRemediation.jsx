@@ -6,14 +6,15 @@ function AIRemediation({ prData, riskAnalysis }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const generateSuggestions = async () => {
+    const generateSuggestions = async (force = false) => {
         setLoading(true);
         setError(null);
 
         try {
             const result = await invoke('getAIRemediation', {
                 prData,
-                riskAnalysis
+                riskAnalysis,
+                forceRefresh: force
             });
 
             if (result.success) {
@@ -68,7 +69,9 @@ function AIRemediation({ prData, riskAnalysis }) {
 
             {error && (
                 <div className="ai-warning">
-                    ⚠️ Using fallback suggestions (AI service unavailable)
+                    <div className="ai-warning">
+                        ⚠️ Using fallback suggestions: {error}
+                    </div>
                 </div>
             )}
 
@@ -103,7 +106,7 @@ function AIRemediation({ prData, riskAnalysis }) {
 
             <div className="ai-footer">
                 <button
-                    onClick={generateSuggestions}
+                    onClick={() => generateSuggestions(true)}
                     className="btn-secondary btn-sm"
                 >
                     🔄 Regenerate Suggestions

@@ -22,6 +22,7 @@
     "@forge/resolver": "^1.5.0",
     "@google/genai": "^1.34.0",
     "@observai/sdk": "^1.0.0",
+    "@supabase/supabase-js": "^2.89.0",
     "node-fetch": "^2.6.7"
   },
   "devDependencies": {

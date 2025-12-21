@@ -46,7 +46,17 @@ function App() {
 
   // Calculate logical risk factors
   const calculateRiskFactors = () => {
-    if (!data || !data.stats) return [];
+    if (!data) return [];
+
+    // Use backend-calculated factors if available
+    if (data.risk_factors) {
+      return data.risk_factors.map(f => ({
+        ...f,
+        color: f.value < 30 ? '#10b981' : f.value < 60 ? '#f59e0b' : '#ef4444'
+      }));
+    }
+
+    if (!data.stats) return [];
 
     const { additions = 0, deletions = 0, changedFiles: changed_files = 0 } = data.stats;
     const totalChanges = additions + deletions;
@@ -81,7 +91,7 @@ function App() {
     });
 
     // 4. Documentation Quality (0-100%, inverse)
-    const { title = '', body = '' } = data;
+    const { prTitle: title = '', body = '' } = data;
     const docScore = Math.min(((title.length + body.length) / 100) * 100, 100);
     const docRisk = 100 - docScore;
     factors.push({

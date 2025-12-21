@@ -63,6 +63,7 @@ resolver.define('getRiskAnalysis', async (req) => {
       additions: prDetails.additions,
       deletions: prDetails.deletions,
       changed_files: prDetails.changed_files,
+      files: prDetails.files || []
     };
 
     // Use new ML service with vector embeddings
@@ -89,14 +90,15 @@ resolver.define('getRiskAnalysis', async (req) => {
     console.log('🔍 Found', similarPRs.length, 'similar PRs');
 
     const result = {
+      prId: prInfo.prId,
       prTitle: prDetails.title,
       risk_score: riskAnalysis.risk_score,
       confidence: riskAnalysis.confidence || 0.85,
       filesChanged: filesChanged.slice(0, 10).map(f => ({
         filename: f.path || f.filename || 'unknown',
-        changes: f.lines_added + f.lines_removed,
-        additions: f.lines_added,
-        deletions: f.lines_removed,
+        changes: (f.lines_added || 0) + (f.lines_removed || 0),
+        additions: f.lines_added || 0,
+        deletions: f.lines_removed || 0,
         risk_score: calculateFileRisk(f),
       })),
       stats: {
@@ -111,6 +113,24 @@ resolver.define('getRiskAnalysis', async (req) => {
         current: s.current,
         reference: s.reference
       })),
+      // Map ML factors to UI-friendly format
+      risk_factors: [
+        {
+          name: 'Code Size',
+          value: Math.round(Math.min((riskAnalysis.factors?.size_vs_benchmark || 1) * 20, 100)),
+          description: riskAnalysis.factors?.size_vs_benchmark > 1.5 ? 'Large change' : 'Moderate size'
+        },
+        {
+          name: 'File Complexity',
+          value: Math.round(Math.min((riskAnalysis.factors?.files_vs_benchmark || 1) * 20, 100)),
+          description: riskAnalysis.factors?.files_vs_benchmark > 1.5 ? 'Wide scope' : 'Focused changes'
+        },
+        {
+          name: 'Documentation',
+          value: Math.round(100 - (Math.min(riskAnalysis.factors?.title_quality || 1, 1) * 100)),
+          description: riskAnalysis.factors?.title_quality < 0.5 ? 'Poorly documented' : 'Good context'
+        }
+      ],
       factors: riskAnalysis.factors,
       similarIncidents: similarPRs.slice(0, 5).map(pr => ({
         id: pr.doc_id || pr.id,
@@ -125,9 +145,9 @@ resolver.define('getRiskAnalysis', async (req) => {
       })),
       dataSource: riskAnalysis.data_source || 'bitbucket_ml_cosine_similarity',
       mlModel: riskAnalysis.ml_model,
-      mlStats: riskAnalysis.similar_prs || [],
+      ml_analysis: riskAnalysis, // Full ML data
       timestamp: new Date().toISOString(),
-      version: '2.0-fresh-data',
+      version: '2.1-id-fix',
     };
 
     console.log('✨ Analysis Complete!');
@@ -158,33 +178,41 @@ resolver.define('getRiskAnalysis', async (req) => {
   }
 });
 
+
 /**
  * GEMINI AI REMEDIATION HANDLER
  */
 resolver.define('getAIRemediation', async (req) => {
   const { payload } = req;
-  const { prData, riskAnalysis } = payload;
+  const { prData, riskAnalysis, forceRefresh } = payload;
 
-  console.log('🔧 AI Remediation requested for PR:', prData.prId);
+  console.log('🔧 AI Remediation requested for PR:', prData.prId || prData.id);
 
   try {
-    // Check cache first (avoid redundant API calls)
-    const cacheKey = `ai_remediation_${prData.prId}`;
-    const cached = await storage.get(cacheKey);
+    // Content-aware cache key
+    const contentHash = `${prData.additions || 0}_${prData.deletions || 0}`;
+    const cacheKey = `ai_remediation_v3_${prData.prId || prData.id}_${contentHash}`;
 
-    if (cached && Date.now() - cached.timestamp < 3600000) {
-      console.log('✅ Returning cached AI suggestions');
-      return cached.data;
+    if (!forceRefresh) {
+      const cached = await storage.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < 3600000) {
+        console.log('✅ Returning cached AI suggestions');
+        return cached.data;
+      }
+    } else {
+      console.log('🔄 Force refresh requested - bypassing cache');
     }
 
     // Generate fresh suggestions
     const result = await geminiService.generateRemediations(prData, riskAnalysis);
 
-    // Cache for 1 hour
-    await storage.set(cacheKey, {
-      data: result,
-      timestamp: Date.now()
-    });
+    // Cache ONLY if successful
+    if (result.success) {
+      await storage.set(cacheKey, {
+        data: result,
+        timestamp: Date.now()
+      });
+    }
 
     return result;
 
@@ -279,7 +307,10 @@ async function fetchBitbucketPR(prInfo) {
 
       if (diffResponse.status === 200) {
         const diffData = await diffResponse.json();
-        files = diffData.values || [];
+        files = (diffData.values || []).map(f => ({
+          ...f,
+          path: f.new?.path || f.old?.path || 'unknown'
+        }));
 
         files.forEach(f => {
           additions += f.lines_added || 0;
